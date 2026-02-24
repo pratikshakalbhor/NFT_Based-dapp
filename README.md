@@ -125,12 +125,7 @@ cd stellar-new
 npm install
 ```
 
-### 3. Create .env.local
-```env
-REACT_APP_CONTRACT_ID= 
-```
-
-### 4. Start App
+### 3. Start App
 ```bash
 npm start
 ```
@@ -147,4 +142,5 @@ npm start
 
 **Built for Stellar Developer Track**
 **Level 1 + Level 2 Submission 🚀**
+
 
