@@ -4,6 +4,8 @@ import "./App.css";
 import { getAddress } from "@stellar/freighter-api";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import NavBar from "./components/navBar";
+import { HORIZON_URL } from "./constants";
+import { fetchNFTs } from "./utils/soroban";
 import PaymentPage from "./pages/PaymentPage";
 import MintPage from "./pages/MintPage";
 import GalleryPage from "./pages/GalleryPage";
@@ -16,7 +18,7 @@ function App() {
   const [nfts, setNfts] = useState([]);
 
   const server = useMemo(
-    () => new StellarSdk.Horizon.Server("https://horizon-testnet.stellar.org"),
+    () => new StellarSdk.Horizon.Server(HORIZON_URL),
     []
   );
 
@@ -40,8 +42,9 @@ function App() {
   };
 
   useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchData = async () => {
       if (walletAddress) {
+        // Fetch balance
         try {
           const account = await server.loadAccount(walletAddress);
           const xlmBalance = account.balances.find(
@@ -49,12 +52,23 @@ function App() {
           );
           setBalance(parseFloat(xlmBalance.balance).toFixed(2));
         } catch (e) {
-          console.error("Failed to fetch balance", e);
+          console.error("Failed to fetch balance:", e);
           setBalance("N/A");
+        }
+
+        // Fetch NFTs
+        try {
+          console.log("Fetching NFTs for", walletAddress);
+          const userNfts = await fetchNFTs(walletAddress);
+          console.log("Fetched NFTs:", userNfts);
+          setNfts(userNfts);
+        } catch (e) {
+          console.error("Failed to fetch NFTs:", e);
+          setNfts([]); // Reset on error
         }
       }
     };
-    fetchBalance();
+    fetchData();
   }, [walletAddress, server]);
 
   return (
@@ -97,6 +111,7 @@ function App() {
                   server={server}
                   setBalance={setBalance}
                   setNfts={setNfts}
+                  nfts={nfts}
                 />
               }
             />

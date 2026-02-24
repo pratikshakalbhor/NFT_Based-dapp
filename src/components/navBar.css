@@ -10,7 +10,6 @@
   left: 0;
   z-index: 1000;
 
-  /* Glassmorphism */
   background: rgba(15, 23, 42, 0.75); /* slate-900 with transparency */
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);

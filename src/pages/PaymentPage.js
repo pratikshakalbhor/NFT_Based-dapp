@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { signTransaction } from "@stellar/freighter-api";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import "../App.css";
+import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
  
 export default function PaymentPage({ walletAddress, balance, setBalance, server }) {
   const [receiver, setReceiver] = useState("");
@@ -34,7 +35,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
 
       const transaction = new StellarSdk.TransactionBuilder(account, {
         fee: fee.toString(),
-        networkPassphrase: StellarSdk.Networks.TESTNET,
+        networkPassphrase: NETWORK_PASSPHRASE,
       })
         .addOperation(
           StellarSdk.Operation.payment({
@@ -48,8 +49,8 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
 
       const xdr = transaction.toXDR();
       const signedXDR = await signTransaction(xdr, {
-        network: "TESTNET",
-        networkPassphrase: StellarSdk.Networks.TESTNET,
+        network: NETWORK,
+        networkPassphrase: NETWORK_PASSPHRASE,
       });
 
       if (!signedXDR) {
@@ -65,7 +66,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
 
       const signedTx = StellarSdk.TransactionBuilder.fromXDR(
         signedXDRString,
-        StellarSdk.Networks.TESTNET
+        NETWORK_PASSPHRASE
       );
 
       setStatus("Submitting...");

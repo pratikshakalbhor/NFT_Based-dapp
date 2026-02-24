@@ -1,7 +1,7 @@
 import { useState } from "react";
-import "./MintPage.css";
 import { getValidImageIds } from "../utils/imageMap";
-import { mintNFT, fetchNFTs } from "../utils/soroban";
+import { mintNFT } from "../utils/soroban";
+import "./MintPage.css";
 
 
 
@@ -41,33 +41,39 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
     }
 
     setLoading(true);
-    setStatus("Please approve the transaction in Freighter...");
+    setStatus("Please approve in Freighter confirmation...");
     setStatusType("info");
 
     try {
       const result = await mintNFT(walletAddress, name, imageUrl.trim().toUpperCase());
 
       if (result.status === "CANCELLED") {
-        setStatus("User Cancelled Transaction");
+        setStatus(result.error || "User Cancelled Transaction");
         setStatusType("warning");
         setLoading(false);
         return;
       }
 
       if (result.status === "FAILED") {
-        setStatus("Transaction Failed");
+        const errorDetail = result.error || "No specific error message provided.";
+        setStatus(`Transaction Failed: ${errorDetail}`);
         setStatusType("warning");
+        setTxHash(result.hash || ""); // Show hash even on failure
         setLoading(false);
         return;
       }
 
-      setStatus(`NFT Minted ✅ ${result.hash.substring(0, 8)}...`);
+      setStatus(`NFT Minted  ${result.hash.substring(0, 8)}...`);
       setStatusType("success");
       setTxHash(result.hash);
       
-      // Fetch updated NFTs from blockchain instead of local update
-      const updatedNfts = await fetchNFTs(walletAddress);
-      setNfts(updatedNfts);
+      // OPTIMISTIC UPDATE: Update local state immediately
+      // This avoids waiting for the blockchain indexer (which might be slow)
+      const newNft = {
+        name: name,
+        imageId: imageUrl.trim().toUpperCase(),
+      };
+      setNfts((prev) => [...prev, newNft]);
 
       setName("");
       setImageUrl("");
@@ -119,6 +125,7 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
             href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
+            style={{ color: '#2563eb', textDecoration: 'underline' }}
           >
             View on Explorer
           </a>

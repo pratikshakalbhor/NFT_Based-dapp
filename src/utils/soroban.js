@@ -1,184 +1,197 @@
 import {
-  SorobanRpc,
-  TransactionBuilder,
-  Networks,
-  BASE_FEE,
+  rpc,
+  Contract,
   Address,
-  Operation,
-  xdr,
+  nativeToScVal,
   scValToNative,
+  TransactionBuilder,
+  BASE_FEE,
+  Account,
 } from "@stellar/stellar-sdk";
+
 import { signTransaction } from "@stellar/freighter-api";
 
-const CONTRACT_ID = "CBT2NS4ZF3JZFQUJEI6UMWABIOUX7NRBVYBN52OTDPIS4WVJ6BGMXNQC";
-const RPC_URL = "https://soroban-testnet.stellar.org";
-const NETWORK_PASSPHRASE = Networks.TESTNET;
+import {
+  CONTRACT_ID,
+  NETWORK,
+  NETWORK_PASSPHRASE,
+  SOROBAN_SERVER,
+} from "../constants";
 
-export const mintNFT = async (owner, name, imageId) => {
-  // Use a single try/catch block to handle all errors and normalize the output.
+export const mintNFT = async (walletAddress, name, imageId) => {
   try {
-    // 1. --- Input Validation ---
-    // Ensure all required parameters are provided and are of the correct type.
-    if (!owner || typeof owner !== 'string') {
-      throw new Error("INVALID_OWNER");
+    if (!walletAddress) {
+      return { status: "FAILED", error: "Wallet not connected." };
     }
-    if (!name || typeof name !== 'string' || name.trim() === '') {
-      throw new Error("INVALID_NAME");
-    }
-    if (!imageId || typeof imageId !== 'string' || imageId.trim() === '') {
-      throw new Error("INVALID_IMAGE_ID");
-    }
+    // Symbols in Soroban are case-sensitive and have length limits.
+    const cleanName =
+      name?.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_").slice(0, 32) || "";
+    const cleanImage =
+      imageId?.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_").slice(0, 32) || "";
 
-    const server = new SorobanRpc.Server(RPC_URL, { allowHttp: true });
-    const cleanName = name.trim().toUpperCase();
-    const cleanImageId = imageId.trim().toUpperCase();
-
-    // 2. --- Fetch Source Account ---
-    // Defensively fetch the account. If it fails, the catch block will handle it.
-    const sourceAccount = await server.getAccount(owner);
-    if (!sourceAccount) {
-        throw new Error("ACCOUNT_NOT_FOUND");
+    if (!cleanName || !cleanImage) {
+      return { status: "FAILED", error: "Invalid name or image ID." };
     }
 
-    // 3. --- Build Transaction ---
-    const op = Operation.invokeContractFunction({
-      contract: CONTRACT_ID,
-      function: "mint_nft",
-      args: [
-        new Address(owner).toScVal(),
-        xdr.ScVal.scvSymbol(cleanName),
-        xdr.ScVal.scvSymbol(cleanImageId),
-      ],
-    });
+    const sourceAccount = await SOROBAN_SERVER.getAccount(walletAddress);
+    const contract = new Contract(CONTRACT_ID);
 
+    // Based on the MismatchingParameterLen error, it's likely the deployed
+    // contract expects 3 arguments, assuming the owner is the minter.
+    const operation = contract.call(
+      "mint_nft",
+      new Address(walletAddress).toScVal(), // minter
+      nativeToScVal(cleanName, { type: "symbol" }),
+      nativeToScVal(cleanImage, { type: "symbol" })
+    );
     const tx = new TransactionBuilder(sourceAccount, {
       fee: BASE_FEE,
       networkPassphrase: NETWORK_PASSPHRASE,
     })
-      .addOperation(op)
+      .addOperation(operation)
       .setTimeout(30)
       .build();
+    const simulation = await SOROBAN_SERVER.simulateTransaction(tx);
 
-    // 4. --- Simulate Transaction ---
-    // Ensure simulation is successful before proceeding.
-    const simulation = await server.simulateTransaction(tx);
-    if (!simulation || SorobanRpc.Api.isSimulationError(simulation) || simulation.status === "ERROR") {
-      console.error("Soroban simulation failed:", simulation);
-      throw new Error("SIMULATION_FAILED");
+    if (!simulation || rpc.Api.isSimulationError(simulation)) {
+      console.error("Simulation error:", simulation);
+      const errorDetail = simulation.error || "Simulation failed.";
+      return { status: "FAILED", error: `Transaction simulation failed: ${errorDetail}` };
     }
 
-    // 5. --- Assemble Transaction ---
-    const preparedTx = SorobanRpc.assembleTransaction(tx, simulation).build();
+    // Assemble the transaction with the simulation results.
+    const preparedTx = rpc.assembleTransaction(tx, simulation).build();
 
-    // 6. --- Sign & Submit Transaction ---
-    try {
-      const signed = await signTransaction(preparedTx.toXDR(), {
-        network: "TESTNET",
-        networkPassphrase: NETWORK_PASSPHRASE,
-      });
 
-      if (!signed) {
-        return { status: "CANCELLED" };
-      }
+   
+    const signedXdr = await signTransaction(preparedTx.toXDR(), {
+  network: NETWORK,
+  networkPassphrase: NETWORK_PASSPHRASE,
+});
 
-      const signedXdr =
-        typeof signed === "string" ? signed : signed.signedTxXdr;
+// Freighter might return object
+const signedXdrString =
+  typeof signedXdr === "object" && signedXdr.signedTxXdr
+    ? signedXdr.signedTxXdr
+    : signedXdr;
 
-      const signedTx = TransactionBuilder.fromXDR(
-        signedXdr,
-        NETWORK_PASSPHRASE
-      );
+// Convert back to Transaction
+const signedTx = TransactionBuilder.fromXDR(
+  signedXdrString,
+  NETWORK_PASSPHRASE
+);
 
-      const sendResponse = await server.sendTransaction(signedTx);
+// NOW send transaction object
+const sendResponse = await SOROBAN_SERVER.sendTransaction(
+  signedTx
+);
+   
 
-      if (!sendResponse.hash) {
-        return { status: "FAILED" };
-      }
+    // Poll the network to wait for the transaction to be confirmed.
+    let getResponse = await SOROBAN_SERVER.getTransaction(sendResponse.hash);
+    while (getResponse.status === "NOT_FOUND") {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      getResponse = await SOROBAN_SERVER.getTransaction(sendResponse.hash);
+    }
 
-      return {
-        status: "SUCCESS",
-        hash: sendResponse.hash
-      };
-
-    } catch (e) {
-      const msg = e?.message?.toLowerCase() || "";
-
-      if (
-        msg.includes("declined") ||
-        msg.includes("rejected") ||
-        msg.includes("user cancelled") ||
-        msg.includes("cancel")
-      ) {
-        return { status: "CANCELLED" };
-      }
-
-      return {
-        status: "FAILED",
-        error: e.message
-      };
+    if (getResponse.status === "SUCCESS") {
+      return { status: "SUCCESS", hash: sendResponse.hash };
+    } else {
+      console.error("Transaction failed after submission:", getResponse);
+      return { status: "FAILED", error: "Transaction failed after submission." };
     }
   } catch (error) {
-    // 10. --- Global Error Handler & Normalizer ---
-    // All errors thrown in the try block are caught here and normalized.
-    console.error("mintNFT error:", error);
-    const errorMessage = error.message || "UNKNOWN_ERROR";
-
-    if (errorMessage.includes("USER_CANCELLED")) {
-      return { status: "CANCELLED", error: "User cancelled the transaction." };
+    console.error("Mint error:", error);
+    if (error?.message?.includes("denied by the user")) {
+      return { status: "CANCELLED", error: "Transaction rejected by user." };
     }
-    if (errorMessage.includes("SIMULATION_FAILED")) {
-      return { status: "FAILED", error: "Transaction simulation failed. Please check parameters." };
-    }
-    if (errorMessage.includes("SUBMISSION_FAILED")) {
-      return { status: "FAILED", error: "Transaction submission failed to the network." };
-    }
-    if (errorMessage.includes("INVALID_XDR")) {
-      return { status: "FAILED", error: "The transaction signature from the wallet was invalid." };
-    }
-    if (errorMessage.includes("ACCOUNT_NOT_FOUND")) {
-      return { status: "FAILED", error: "The source account was not found on the network." };
-    }
-    if (errorMessage.includes("INVALID_OWNER") || errorMessage.includes("INVALID_NAME") || errorMessage.includes("INVALID_IMAGE_ID")) {
-      return { status: "FAILED", error: "Invalid input parameters provided for minting." };
-    }
-
-    // Default case for any other unexpected errors.
-    return { status: "FAILED", error: "An unexpected error occurred." };
+    return { status: "FAILED", error: error.message || "An unknown error occurred." };
   }
 };
 
-export const fetchNFTs = async (address) => {
-  const server = new SorobanRpc.Server(RPC_URL, { allowHttp: true });
+/**
+ * Performs a read-only contract call simulation.
+ * @param {string} sourceAddress - A valid Stellar address for the dummy source account.
+ * @param {import("@stellar/stellar-sdk").Operation.InvokeHostFunction} operation - The contract call operation.
+ * @returns {Promise<any>} The native value of the simulation result, or null on failure.
+ */
+const performReadOnlyCall = async (sourceAddress, operation) => {
+  const dummyAccount = new Account(sourceAddress, "0");
 
+  const tx = new TransactionBuilder(dummyAccount, {
+    fee: "0",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(operation)
+    .setTimeout(30)
+    .build();
+
+  const simulation = await SOROBAN_SERVER.simulateTransaction(tx);
+
+  if (rpc.Api.isSimulationError(simulation) || !simulation.result?.retval) {
+    return null;
+  }
+
+  return scValToNative(simulation.result.retval);
+};
+
+/**
+ * For production apps, consider a more efficient contract design (e.g., a `get_nfts_by_owner` function).
+ * @param {string} walletAddress - The address of the owner.
+ * @returns {Promise<Array<{id: number, owner: string, name: string, image: string}>>}
+ */
+export const fetchNFTs = async (walletAddress) => {
+  if (!walletAddress) return [];
+
+  const contract = new Contract(CONTRACT_ID);
   try {
-    const account = await server.getAccount(address);
+    // 1. Get total number of NFTs ever minted.
+    const totalNum = await performReadOnlyCall(
+      walletAddress,
+      contract.call("get_total")
+    );
 
-    const op = Operation.invokeContractFunction({
-      contract: CONTRACT_ID,
-      function: "get_nfts",
-      args: [], // Fetch ALL NFTs (or change to get_nfts_by_owner if your contract supports it)
-    });
-
-    const tx = new TransactionBuilder(account, {
-      fee: BASE_FEE,
-      networkPassphrase: NETWORK_PASSPHRASE,
-    })
-      .addOperation(op)
-      .setTimeout(30)
-      .build();
-
-    const simulation = await server.simulateTransaction(tx);
-
-    if (SorobanRpc.Api.isSimulationError(simulation)) {
-      console.warn("Simulation error during fetch:", simulation);
+    if (totalNum === null || totalNum === 0) {
       return [];
     }
 
-    if (!simulation.result?.retval) return [];
+    const nftPromises = [];
+    for (let i = 1; i <= totalNum; i++) {
+      // For each ID, create a promise to fetch its owner.
+      const nftPromise = (async () => {
+        const ownerResult = await performReadOnlyCall(
+          walletAddress,
+          contract.call("get_owner", nativeToScVal(i, { type: "u32" }))
+        );
 
-    return scValToNative(simulation.result.retval);
-  } catch (e) {
-    console.error("Fetch NFTs failed:", e);
-    return [];
+        const ownerAddress = ownerResult ? new Address(ownerResult).toString() : null;
+
+        // If the owner matches, fetch the name and image for this NFT.
+        if (ownerAddress === walletAddress) {
+          const [name, image] = await Promise.all([
+            performReadOnlyCall(
+              walletAddress,
+              contract.call("get_name", nativeToScVal(i, { type: "u32" }))
+            ),
+            performReadOnlyCall(
+              walletAddress,
+              contract.call("get_image", nativeToScVal(i, { type: "u32" }))
+            ),
+          ]);
+          return { id: i, owner: ownerAddress, name, image };
+        }
+        return null;
+      })();
+      nftPromises.push(nftPromise);
+    }
+
+    // 2. Wait for all fetches to complete.
+    const allNfts = await Promise.all(nftPromises);
+
+    // 3. Filter out nulls (NFTs not owned by the user or errors) and return.
+    return allNfts.filter((nft) => nft !== null);
+  } catch (error) {
+    console.error("Error fetching NFTs:", error);
+    return []; // Return an empty array on failure.
   }
 };
