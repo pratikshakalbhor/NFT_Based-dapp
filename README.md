@@ -10,7 +10,6 @@ Users can connect their wallet, mint NFTs, view them in a gallery, and verify tr
 - [Technologies Used](#technologies-used)
 - [Smart Contract Info](#smart-contract-info)
 - [Application Features](#application-features)
-- [Folder Structure](#folder-structure)
 - [Screenshots](#screenshots)
 - [Testing](#testing)
 - [Live Demo](#live-demo)
@@ -95,7 +94,6 @@ Minimum 3 tests passing.
 
 ## Live Demo
 
-- **Live Application:** 
 - **Demo Video (1 minute):** https://drive.google.com/file/d/15LAMuvigHuGHjUaiLLO9f5TplRy8AD2n/view?usp=sharing
 
 ## Project Setup Guide
@@ -138,3 +136,4 @@ Minimum 3 tests passing.
 - 3+ Passing Tests
 - Documentation
 - Demo Video
+
