@@ -50,6 +50,13 @@ impl NFTContract {
 
         // Finally, update the total number of NFTs.
         env.storage().instance().set(&TOTAL, &nft_id);
+
+        // Emit an event to notify that a new NFT has been minted.
+        // Topics: event_name, nft_id, owner
+       env.events().publish(
+    (symbol_short!("NFT_MINTED"), nft_id),
+    (owner, name)
+);
     }
 
     /// Returns the total number of NFTs minted so far.

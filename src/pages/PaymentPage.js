@@ -1,7 +1,11 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { signTransaction } from "@stellar/freighter-api";
 import * as StellarSdk from "@stellar/stellar-sdk";
+import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
+import { XLMIcon } from "../components/ProfilePageIcons";
 import "../App.css";
+import "./PaymentPage.css";
 import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
  
 export default function PaymentPage({ walletAddress, balance, setBalance, server }) {
@@ -9,11 +13,6 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const shortAddress = (addr) => {
-    if (!addr) return "";
-    return addr.slice(0, 4) + "..." + addr.slice(-4);
-  };
 
   const sendPayment = async () => {
     if (!receiver || !amount) {
@@ -114,48 +113,77 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
   };
 
   return (
-    <div className="card">
-      <h1 className="title">Stellar Payment dApp</h1>
-      <p className="subtitle">Secure & Fast Payments</p>
-      <div className="wallet-section">
-        <div className="status-badge connected">
-          <span className="status-dot"></span>
-          Wallet: {shortAddress(walletAddress)}
-        </div>
-        <div className="balance-display">
-          <span className="balance-amount">{balance}</span>
-          <span className="balance-symbol"> XLM</span>
-        </div>
-      </div>
-
-      <div className="form-group">
-        <input
-          className="form-input"
-          placeholder="Receiver Address (G...)"
-          value={receiver}
-          onChange={(e) => setReceiver(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
-        <input
-          className="form-input"
-          placeholder="Amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-      </div>
-
-      <button
-        className="button button-primary button-large"
-        onClick={sendPayment}
-        disabled={loading}
+    <div className="payment-page-wrapper">
+      <div className="payment-bg-gradient" />
+      
+      <motion.div 
+        className="payment-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        {loading ? "Sending..." : "Send XLM"}
-      </button>
-      {status && (
-        <div className={`status-message ${getStatusClassName()}`}>{status}</div>
-      )}
+        <motion.div className="payment-header" variants={itemVariants}>
+          <h1 className="payment-title">Send Payment</h1>
+          <p className="payment-subtitle">Secure & Fast Global Transactions</p>
+        </motion.div>
+
+        <motion.div className="card payment-card" variants={itemVariants}>
+          {/* Balance Display */}
+          <div className="balance-card">
+            <span className="balance-label">Available Balance</span>
+            <div className="balance-value-container">
+              <XLMIcon className="xlm-icon-large" />
+              <span className="balance-amount-large">{balance}</span>
+              <span className="balance-currency">XLM</span>
+            </div>
+          </div>
+
+          {/* Payment Form */}
+          <div className="payment-form">
+            <div className="input-group">
+              <label className="input-label">Receiver Address</label>
+              <input
+                className="form-input"
+                placeholder="G..."
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Amount (XLM)</label>
+              <input
+                className="form-input"
+                placeholder="0.00"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              className="button button-primary button-large"
+              onClick={sendPayment}
+              disabled={loading}
+              style={{ marginTop: '12px' }}
+            >
+              {loading ? <><span className="spinner"></span> Processing...</> : "Send Payment"}
+            </button>
+          </div>
+
+          {status && (
+            <motion.div 
+              className={`status-message ${getStatusClassName()}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {status}
+            </motion.div>
+          )}
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
