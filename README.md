@@ -1,146 +1,168 @@
-# 🚀 Stellar Payment & NFT dApp
-### Level 1 + Level 2 Submission
+# Stellar NFT Reward dApp
 
-## 📌 Overview
-This project is a decentralized application built on the Stellar Testnet.
-It demonstrates:
-- Wallet integration
-- XLM payment functionality
-- Soroban smart contract deployment
-- NFT minting
-- Real-time transaction lifecycle
-- NFT gallery
+A full-stack decentralized application built on Stellar Testnet.
+Users can connect their wallet, mint NFTs, view them in a gallery, and verify transactions on-chain.
 
-The app combines **Level 1 (Payments)** and **Level 2 (Smart Contract + NFT)** into one complete working dApp.
+## Table of Contents
 
----
+- [Technologies Used](#technologies-used)
+- [Smart Contract Info](#smart-contract-info)
+- [Application Features](#application-features)
+- [Folder Structure](#folder-structure)
+- [Screenshots](#screenshots)
+- [Testing](#testing)
+- [Live Demo](#live-demo)
+- [Project Setup Guide](#project-setup-guide)
+- [Level Progression](#level-progression)
 
-##  Level 1 – Payment dApp
+## Technologies Used
 
-### Features
-- Connect Freighter wallet
-- Display XLM balance
-- Send XLM to any valid Stellar address
-- Transaction status tracking
-- **Error handling:**
-  - Invalid address
-  - Insufficient balance
-  - User rejected transaction
-  - Network failure
+- **Smart Contract:** Rust, Soroban-SDK
+- **Wallet:** Freighter (Chrome Extension)
+- **Frontend:** ReactJS
+- **Styling:** CSS / TailwindCSS
+- **Blockchain Integration:** Stellar-SDK
+- **Routing:** React Router
+- **Testing:** Jest
 
----
+## Smart Contract Info
 
-##  Level 2 – NFT Minter (Soroban Smart Contract)
-
-### Features
-- Smart contract deployed on Testnet
-- Contract called from frontend
-- Mint NFT with metadata (name + image ID)
-- **Real-time transaction status:**
-  - Waiting for wallet confirmation
-  - Pending
-  - Success
-  - Failed
-- NFT preview after mint
-- NFT Gallery page
-- Explorer verification link
-
----
-
-## 🛠 Tech Stack
-- React
-- Stellar SDK
-- Soroban RPC
-- Freighter Wallet API
-- Stellar Testnet
-- Rust (Smart Contract)
-
----
-
-##  Smart Contract Details
-
-**Contract Address:**
-```
-CDEJPGZHERJIEP44Q5BDM44GJL4NVLXOGH4SNANZJUZODQPU75YF3FUR
-```
----
-
-## 🔎 Verified Transaction Example
-
-**Transaction Hash:**
-```
- a3c9a97672597dc4c1b9d2b65a9ca31fa6d155e0fbbe415c09993328e1fae703
-```
-
-**Explorer Link:**
-https://stellar.expert/explorer/testnet/tx/a3c9a97672597dc4c1b9d2b65a9ca31fa6d155e0fbbe415c09993328e1fae703
-
----
-
-## 📸 Screenshots
-
-### Wallet & Payment Page
-<img width="1860" height="965" alt="Screenshot 2026-02-24 082732" src="https://github.com/user-attachments/assets/3ef99d3f-cc59-4089-8ff2-34f609654ca0" />
-
-<img width="1850" height="910" alt="Screenshot 2026-02-24 082816" src="https://github.com/user-attachments/assets/722094ce-8ff1-400d-b5ab-03571e712697" />
-
-<img width="1867" height="898" alt="Screenshot 2026-02-24 082855" src="https://github.com/user-attachments/assets/58d41f5f-3471-4630-8580-10ead92471fa" />
-
-
-### XLM Payment Success
-<img width="1853" height="903" alt="Screenshot 2026-02-24 082933" src="https://github.com/user-attachments/assets/07c13da4-9ca4-4ed5-a4d6-c9b6ae8411a1" />
-
-
-### NFT Mint Confirmation
-<img width="1920" height="1080" alt="Screenshot (86)" src="https://github.com/user-attachments/assets/1fa236c3-4df5-4e6b-b535-e8dd74921155" />
-
-
-### NFT Mint Success
-<img width="1853" height="906" alt="Screenshot 2026-02-24 084738" src="https://github.com/user-attachments/assets/2fd69d30-57d4-4bc6-952e-85f928207c2b" />
-
-### Explorer Page
-<img width="1876" height="911" alt="Screenshot 2026-02-24 084934" src="https://github.com/user-attachments/assets/83b0b650-b52d-4642-9603-6e5f0658fc28" />
-
-
-### NFT Gallery Page
-<img width="1854" height="910" alt="Screenshot 2026-02-24 084911" src="https://github.com/user-attachments/assets/e822a080-3d9b-4edd-a311-850b0e1d36bb" />
-
-
----
-
-## Project Structure
-<img width="1060" height="402" alt="Screenshot 2026-02-24 090452" src="https://github.com/user-attachments/assets/8e9ceff4-a07f-46b1-a945-3ed59c32a13b" />
-
-
-## 🚀 Installation
-
-### 1. Clone Repository
+**Smart contract path:**
 ```bash
-git clone https://github.com/pratikshakalbhor/stellar-whitebelt-dapp
-cd stellar-new
+./contract/src/lib.rs
 ```
 
-### 2. Install Dependencies
+**Deployed Contract Address:**
+`YOUR_CONTRACT_ADDRESS`
+
+**View on Explorer:**
+Stellar Expert Explorer
+
+## Application Features
+
+- Wallet Connect (Freighter)
+- NFT Minting
+- NFT Gallery
+- Profile Page
+- Transaction Hash Display
+- Explorer Link Integration
+- Loading States
+- Responsive UI
+- 3+ Passing Tests
+
+## Folder Structure
+
+```text
+stellar-nft-dapp/
+│
+├── contract/
+│   └── src/
+│       └── lib.rs
+│
+├── public/
+│
+├── src/
+│   ├── components/
+│   │   ├── NavBar.jsx
+│   │   ├── ProfileViewer.jsx
+│   │   ├── WalletModal.jsx
+│   │   └── Soroban.js
+│   │
+│   ├── pages/
+│   │   ├── PaymentPage.jsx
+│   │   ├── MintPage.jsx
+│   │   ├── GalleryPage.jsx
+│   │   └── ProfilePage.jsx
+│   │
+│   ├── context/
+│   │   └── WalletContext.js
+│   │
+│   ├── utils/
+│   │   ├── imageMap.js
+│   │   └── soroban.js
+│   │
+│   ├── App.js
+│   └── index.js
+│
+├── package.json
+└── README.md
+```
+
+## Screenshots
+
+> **Important:** Create a folder in root: `/screenshots` and put all images there.
+
+### Wallet Connection
+!Wallet Connection
+
+### NFT Minting
+!NFT Minting
+
+### NFT Gallery
+!NFT Gallery
+
+### Profile Page
+!Profile Page
+
+### Test Output (3+ Tests Passing)
+!Test Output
+
+## Testing
+
+Run tests:
 ```bash
-npm install
+npm test
 ```
+Minimum 3 tests passing.
 
-### 3. Start App
-```bash
-npm start
-```
----
+**Example tests:**
+- Renders Mint Page
+- Wallet Connect Button appears
+- NFT Card renders correctly
 
-## 🎯 Learning Outcomes
-- Stellar transaction building & signing
-- Soroban contract interaction
-- Wallet lifecycle handling
-- Error management in Web3 apps
-- Full dApp architecture
+## Live Demo
 
----
+- **Live Application:** https://your-vercel-link.com
+- **Demo Video (1 minute):** https://your-video-link.com
 
-**Built for Stellar Developer Track**
-**Level 1 + Level 2 Submission 🚀**
+## Project Setup Guide
 
+1. Install NodeJS, Rust, Stellar CLI.
+2. Install Freighter wallet.
+3. Clone repository:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/YOUR-REPO.git
+   ```
+4. Install dependencies:
+   ```bash
+   npm install
+   ```
+5. Run project:
+   ```bash
+   npm start
+   ```
+6. Run tests:
+   ```bash
+   npm test
+   ```
+
+## Level Progression
+
+### Level 1
+- Wallet Integration
+- Stellar Payment
+- Transaction Hash Display
+
+### Level 2
+- NFT Minting
+- NFT Gallery
+- Profile Section
+
+### Level 3
+- Complete Mini dApp
+- Routing
+- Loading States
+- 3+ Passing Tests
+- Documentation
+- Demo Video
 
