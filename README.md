@@ -1,3 +1,5 @@
+
+# Level 3 complited
 # Stellar NFT Reward dApp
 
 A full-stack decentralized application built on Stellar Testnet.
@@ -8,7 +10,6 @@ Users can connect their wallet, mint NFTs, view them in a gallery, and verify tr
 - [Technologies Used](#technologies-used)
 - [Smart Contract Info](#smart-contract-info)
 - [Application Features](#application-features)
-- [Folder Structure](#folder-structure)
 - [Screenshots](#screenshots)
 - [Testing](#testing)
 - [Live Demo](#live-demo)
@@ -33,10 +34,10 @@ Users can connect their wallet, mint NFTs, view them in a gallery, and verify tr
 ```
 
 **Deployed Contract Address:**
-`YOUR_CONTRACT_ADDRESS`
+`CDA44AAR7XCMCO7RTUQEBXZIFINK6WQBE65LRGO5DHBQTNMPANDDWK4F`
 
 **View on Explorer:**
-Stellar Expert Explorer
+https://stellar.expert/explorer/testnet/tx/7f6a249aa4833b3842d7fd986ced2663b0ec075b7225f861080abbc82a2c134b
 
 ## Application Features
 
@@ -50,62 +51,33 @@ Stellar Expert Explorer
 - Responsive UI
 - 3+ Passing Tests
 
-## Folder Structure
-
-```text
-stellar-nft-dapp/
-│
-├── contract/
-│   └── src/
-│       └── lib.rs
-│
-├── public/
-│
-├── src/
-│   ├── components/
-│   │   ├── NavBar.jsx
-│   │   ├── ProfileViewer.jsx
-│   │   ├── WalletModal.jsx
-│   │   └── Soroban.js
-│   │
-│   ├── pages/
-│   │   ├── PaymentPage.jsx
-│   │   ├── MintPage.jsx
-│   │   ├── GalleryPage.jsx
-│   │   └── ProfilePage.jsx
-│   │
-│   ├── context/
-│   │   └── WalletContext.js
-│   │
-│   ├── utils/
-│   │   ├── imageMap.js
-│   │   └── soroban.js
-│   │
-│   ├── App.js
-│   └── index.js
-│
-├── package.json
-└── README.md
-```
 
 ## Screenshots
 
-> **Important:** Create a folder in root: `/screenshots` and put all images there.
-
 ### Wallet Connection
-!Wallet Connection
+<img width="1878" height="893" alt="image" src="https://github.com/user-attachments/assets/91bc9810-00ee-4968-b342-1e6b47e76228" />
+
 
 ### NFT Minting
-!NFT Minting
+<img width="1871" height="902" alt="image" src="https://github.com/user-attachments/assets/fcb62a45-a4f4-4cba-ace1-71bc9de0bb5a" />
+
+##  NFT Minting Success
+<img width="1867" height="886" alt="image" src="https://github.com/user-attachments/assets/883f3052-a78f-41e0-b81b-3ccafc4eeddd" />
 
 ### NFT Gallery
-!NFT Gallery
+<img width="1880" height="903" alt="image" src="https://github.com/user-attachments/assets/9156ffd7-58fc-40cf-b91d-14335976e718" />
+
+### Explorer Page
+<img width="1841" height="903" alt="image" src="https://github.com/user-attachments/assets/11a3c805-5040-4f65-a986-3745ea4a6410" />
+
 
 ### Profile Page
-!Profile Page
+<img width="1875" height="908" alt="image" src="https://github.com/user-attachments/assets/2d98afe3-e51e-4af7-87fe-26d3ea38da8e" />
+
 
 ### Test Output (3+ Tests Passing)
-!Test Output
+<img width="1874" height="963" alt="Screenshot 2026-02-27 234555" src="https://github.com/user-attachments/assets/36bf5215-69a0-455f-b3b3-9e93ccdb028a" />
+
 
 ## Testing
 
@@ -122,8 +94,7 @@ Minimum 3 tests passing.
 
 ## Live Demo
 
-- **Live Application:** https://your-vercel-link.com
-- **Demo Video (1 minute):** https://your-video-link.com
+- **Demo Video (1 minute):** https://drive.google.com/file/d/15LAMuvigHuGHjUaiLLO9f5TplRy8AD2n/view?usp=sharing
 
 ## Project Setup Guide
 
@@ -131,7 +102,7 @@ Minimum 3 tests passing.
 2. Install Freighter wallet.
 3. Clone repository:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/YOUR-REPO.git
+   git clone https://github.com/pratikshakalbhor/stellar-payment-nft-dapp
    ```
 4. Install dependencies:
    ```bash
@@ -165,4 +136,5 @@ Minimum 3 tests passing.
 - 3+ Passing Tests
 - Documentation
 - Demo Video
+
 
