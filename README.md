@@ -136,5 +136,19 @@ Minimum 3 tests passing.
 - 3+ Passing Tests
 - Documentation
 - Demo Video
+### Level 4
+
+---
+
+## 🔗 Smart Contract Details
+---
+- Network: Stellar Testnet  
+- Contract ID: CCMH2CI5H2YZSX2LWAKCCFMI33XH4R7JSPUJ5XHRQQLO6G76I6WDTUB
+- Deployment Transaction Hash: d6d34e8ea7d7357b0cc7c0b74d907737081c15da55adbbc4fe30d13945fd8e01 
+- Explorer Link : https://stellar.expert/explorer/testnet/tx/d6d34e8ea7d7357b0cc7c0b74d907737081c15da55adbbc4fe30d13945fd8e01
+
+You can verify the deployment on Stellar Expert Explorer using the transaction hash.
+
+---
 
 
