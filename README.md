@@ -141,18 +141,17 @@ Minimum 3 tests passing.
 ---
 
 ## 🔗 Smart Contract Details
-## Custom Token Deployment
+## NFTREWARD Token Deployment Details
 
 Token Name: NFTREWARD  
 Network: Stellar Testnet  
 
-Contract Address:  
-CB4Z4YTMIDR2K1HKXLWHT2GCDPEUSH7MZ4TNJZLM5NJB47OSRPB2OHBI  
+Contract ID:  
+CC727BIT26EWN3XINZBVCEUDZONAA34ABNUDCDW724DMSKPOBZ2H6LQZ  
 
 Deployment Transaction Hash:  
-95789a01bef5b4a8f8f7146d958334e344db0f08120dfa8187a47ff899a90e40  
+d7475766ad63160b63ab396340d57c8402aa33721c26b22aff2d2099e3b4357  
 
 Explorer Link:  
-https://stellar.expert/explorer/testnet/tx/95789a01bef5b4a8f8f7146d958334e344db0f08120dfa8187a47ff899a90e40
+https://stellar.expert/explorer/testnet/tx/d7475766ad63160b63ab396340d57c8402aa33721c26b22aff2d2099e3b4357
 
----
