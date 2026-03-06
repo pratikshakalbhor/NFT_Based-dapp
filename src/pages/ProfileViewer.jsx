@@ -8,10 +8,7 @@ import {
     scValToNative,
     xdr,
 } from 'soroban-client';
-
-const HORIZON_URL = 'https://horizon-testnet.stellar.org';
-const CONTRACT_ID = "YOUR_CONTRACT_ID_HERE"; // TODO: Replace with your actual contract ID
-const RPC_URL = 'https://soroban-testnet.stellar.org';
+import { HORIZON_URL, RPC_URL, CONTRACT_ID } from '../constants';
 
 const StatItem = ({ label, value, loading }) => (
     <div className="stat-item">

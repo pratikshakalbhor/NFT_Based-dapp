@@ -41,6 +41,8 @@ const NavBar = () => {
       <NavLink to="/" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Payment</NavLink>
       <NavLink to="/mint" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Mint NFT</NavLink>
       <NavLink to="/gallery" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Gallery</NavLink>
+      <NavLink to="/marketplace" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Marketplace</NavLink>
+      <NavLink to="/activity" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Activity</NavLink>
       <NavLink to="/profile" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Profile</NavLink>
     </>
   );

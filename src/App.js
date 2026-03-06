@@ -6,10 +6,11 @@ import NavBar from "./components/navBar";
 import { HORIZON_URL } from "./constants";
 import Background from "./components/Background"; 
 import { fetchNFTs } from "./utils/soroban";
-import { getBalance } from "./stellar";
 import PaymentPage from "./pages/PaymentPage";
 import MintPage from "./pages/MintPage";
 import GalleryPage from "./pages/GalleryPage";
+import MarketplacePage from "./pages/MarketplacePage";
+import ActivityPage from "./pages/ActivityPage";
 import { useWallet } from "./WalletContext";
 import WalletModal from "./WalletModal";
 import ProfilePage from "./components/ProfilePage";
@@ -20,7 +21,6 @@ function App() {
   const [balance, setBalance] = useState("0");
   const [nfts, setNfts] = useState([]);
   const [accountDetails, setAccountDetails] = useState(null);
-  const [rewardBalance, setRewardBalance] = useState(0);
 
   const server = useMemo(
     () => new StellarSdk.Horizon.Server(HORIZON_URL),
@@ -54,17 +54,6 @@ function App() {
           console.error("Failed to fetch NFTs:", e);
           setNfts([]); // Reset on error
         }
-
-        // Fetch NFTREWARD Token Balance
-        try {
-          console.log("Calling getBalance...");
-          getBalance(walletAddress).then((res) => {
-            console.log("Balance received:", res);
-            setRewardBalance(res);
-          });
-        } catch (e) {
-          console.error("Failed to fetch reward balance:", e);
-        }
       }
     };
     fetchData();
@@ -72,7 +61,7 @@ function App() {
 
   return (
     <>
-      {Background && <Background />}
+      <Background />
       <div className={`app-container relative z-10 ${walletAddress ? "loggedin" : "loggedout"}`}>
         <WalletModal />
         {walletAddress && <NavBar />}
@@ -103,7 +92,6 @@ function App() {
                       balance={balance}
                       setBalance={setBalance}
                       server={server}
-                      rewardBalance={rewardBalance}
                     />
                 </div>
               ) : <Navigate to="/login" replace />
@@ -130,7 +118,7 @@ function App() {
             element={
               walletAddress ? (
                 <div className="pages-container">
-                  <ProfilePage account={accountDetails} nfts={nfts} rewardBalance={rewardBalance} />
+                  <ProfilePage account={accountDetails} nfts={nfts} />
                 </div>
               ) : <Navigate to="/login" replace />
             }
@@ -141,6 +129,26 @@ function App() {
               walletAddress ? (
                 <div className="pages-container">
                   <GalleryPage nfts={nfts} />
+                </div>
+              ) : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/marketplace" 
+            element={
+              walletAddress ? (
+                <div className="pages-container">
+                  <MarketplacePage walletAddress={walletAddress} nfts={nfts} server={server} />
+                </div>
+              ) : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/activity" 
+            element={
+              walletAddress ? (
+                <div className="pages-container">
+                  <ActivityPage walletAddress={walletAddress} />
                 </div>
               ) : <Navigate to="/login" replace />
             } 
