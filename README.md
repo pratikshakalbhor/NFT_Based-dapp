@@ -4,18 +4,23 @@
 > Production-ready NFT dApp with **inter-contract calls**, **custom SNFT reward token** on Stellar Testnet.
 > A full-stack decentralized application built on Stellar Testnet. Users can connect their wallet, mint NFTs, view them in a gallery, and verify transactions on-chain.
 
----
+
 
 ## 🚀 Live Demo
 
 📹 **Demo Video:** https://drive.google.com/file/d/1VqA4rUtSywQL947pCeHwyqXz2nJtDg0E/view?usp=sharing
 
----
+
+## Deployment Details
+
 **Deployed Contract Address:**
 CAY3O4WNR3H7T4ARQIXNPITJPHWY7ZRMINGQR2TQBHDQJXDEBR33OKFP
 
-**View on Explorer:**
-https://stellar.expert/explorer/testnet/tx/23fac9f8ac14a0b9cde986dad60713ed69fee18a4656cb15a2e787133c24269f
+**NFT Mint Transaction :** 
+43f5474a4dc656214093f4980380cda10e3b0b39d71c5ce8b087c9819fc0c48d
+
+**View on Explorer:** 
+https://stellar.expert/explorer/testnet/tx/43f5474a4dc656214093f4980380cda10e3b0b39d71c5ce8b087c9819fc0c48d
 
 ---
 ## Screenshots
@@ -188,6 +193,7 @@ d7475766ad63160b63ab396340d57c8402aa33721c26b22aff2d2099e3b4357
 
 Explorer Link:  
 https://stellar.expert/explorer/testnet/tx/d7475766ad63160b63ab396340d57c8402aa33721c26b22aff2d2099e3b4357
+
 
 
 
