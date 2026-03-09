@@ -10,9 +10,12 @@ A full-stack decentralized application built on Stellar Testnet. Users can conne
 📹 **Demo Video:** https://drive.google.com/file/d/1VqA4rUtSywQL947pCeHwyqXz2nJtDg0E/view?usp=sharing
 
 🚀 **Live Demo:** https://nft-based-dapp.vercel.app/login
-![CI/CD](https://github.com/pratikshakalbhor/NFT_Based-dapp/actions/workflows/ci.yml/badge.svg)
 
 ## 📱 Mobile Responsive
+C:\Users\HP\OneDrive\Desktop\stellar level 1\stellar-new\public\screenshots\mobile.png
+
+## ⚙️ CI/CD Pipeline
+![alt text](image.png)
 
 
 ## Deployment Details
