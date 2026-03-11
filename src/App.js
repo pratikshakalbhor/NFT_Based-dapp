@@ -30,7 +30,6 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       if (walletAddress) {
-        // Fetch account, which includes balance
         try {
           const account = await server.loadAccount(walletAddress);
           setAccountDetails(account);
@@ -44,7 +43,6 @@ function App() {
           setBalance("N/A");
         }
 
-        // Fetch NFTs
         try {
           console.log("Fetching NFTs for", walletAddress);
           const userNfts = await fetchNFTs(walletAddress);
@@ -52,7 +50,7 @@ function App() {
           setNfts(userNfts);
         } catch (e) {
           console.error("Failed to fetch NFTs:", e);
-          setNfts([]); // Reset on error
+          setNfts([]);
         }
       }
     };
@@ -67,17 +65,85 @@ function App() {
         {walletAddress && <NavBar />}
         
         <Routes>
+          {/* ✅ Mobile Responsive Login Page */}
           <Route path="/login" element={
             !walletAddress ? (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-purple-900/40 p-8 transition-all duration-300 hover:shadow-purple-600/50 hover:scale-[1.02] text-center max-w-[480px] w-full mt-[120px] mx-auto">
-                <h1 className="title">Stellar Payment dApp</h1>
-                <p className="subtitle">Connect your wallet to get started</p>
-                <button
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium py-3 rounded-xl shadow-lg shadow-purple-900/40 transition-all duration-300 hover:scale-[1.03]"
-                  onClick={() => setModalOpen(true)}
-                >
-                  Connect Wallet
-                </button>
+              <div style={{
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "16px",
+              }}>
+                <div style={{
+                  background: "rgba(255,255,255,0.05)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "24px",
+                  padding: "clamp(24px, 6vw, 48px)",
+                  width: "100%",
+                  maxWidth: "480px",
+                  textAlign: "center",
+                  boxShadow: "0 25px 50px rgba(88,28,135,0.4)",
+                }}>
+                  <div style={{
+                    width: "64px",
+                    height: "64px",
+                    background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                    borderRadius: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 20px",
+                    fontSize: "28px",
+                  }}>
+                    🌟
+                  </div>
+
+                  <h1 style={{
+                    fontSize: "clamp(1.4rem, 5vw, 2rem)",
+                    fontWeight: 700,
+                    color: "#fff",
+                    marginBottom: "10px",
+                    lineHeight: 1.2,
+                  }}>Stellar NFT dApp</h1>
+                  
+                  <p style={{
+                    fontSize: "clamp(0.85rem, 3vw, 1rem)",
+                    color: "rgba(255,255,255,0.6)",
+                    marginBottom: "32px",
+                    lineHeight: 1.5,
+                  }}>Connect your wallet to get started</p>
+                  
+                  <button
+                    style={{
+                      width: "100%",
+                      background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                      color: "#fff",
+                      fontWeight: 600,
+                      padding: "clamp(12px, 3vw, 16px)",
+                      borderRadius: "14px",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "clamp(0.9rem, 3vw, 1rem)",
+                      boxShadow: "0 8px 24px rgba(124,58,237,0.4)",
+                      transition: "all 0.3s ease",
+                    }}
+                    onClick={() => setModalOpen(true)}
+                    onMouseEnter={e => e.target.style.transform = "scale(1.02)"}
+                    onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                  >
+                    Connect Wallet
+                  </button>
+
+                  <p style={{
+                    marginTop: "20px",
+                    fontSize: "0.75rem",
+                    color: "rgba(255,255,255,0.3)",
+                  }}>
+                    Supports Freighter • Albedo • xBull
+                  </p>
+                </div>
               </div>
             ) : <Navigate to="/" replace />
           } />
