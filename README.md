@@ -7,15 +7,17 @@ A full-stack decentralized application built on Stellar Testnet. Users can conne
 
 ## 🚀 Live Demo
 
-📹 **Demo Video:** https://drive.google.com/file/d/1VqA4rUtSywQL947pCeHwyqXz2nJtDg0E/view?usp=sharing
-
 🚀 **Live Demo:** https://nft-based-dapp.vercel.app/login
 
+📹 **Demo Video:** https://drive.google.com/file/d/1VqA4rUtSywQL947pCeHwyqXz2nJtDg0E/view?usp=sharing
+
+
 ## 📱 Mobile Responsive
-C:\Users\HP\OneDrive\Desktop\stellar level 1\stellar-new\public\screenshots\mobile.png
+<img width="1141" height="852" alt="Screenshot 2026-03-09 213008" src="https://github.com/user-attachments/assets/645c0b85-969f-4afc-bcec-c43500e15d3a" />
+
 
 ## ⚙️ CI/CD Pipeline
-![alt text](image.png)
+<img width="1482" height="592" alt="image" src="https://github.com/user-attachments/assets/bb306b8d-fed8-4fb8-93bb-8d22c4af2edc" />
 
 
 ## Deployment Details
@@ -191,6 +193,7 @@ npm test
 - [Freighter Wallet](https://freighter.app)
 
 ---
+
 
 
 
