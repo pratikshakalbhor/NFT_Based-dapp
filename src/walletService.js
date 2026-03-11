@@ -33,10 +33,22 @@ export const connectFreighter = async () => {
       throw new Error("Freighter is not installed. Please install Freighter extension.");
     }
 
-    const publicKey = await requestAccess();
+    const result = await requestAccess();
     
-    if (!publicKey) {
+    // ✅ Fix: result object असेल तर .address काढा
+    let publicKey;
+    if (typeof result === 'string') {
+      publicKey = result;
+    } else if (result && result.address) {
+      publicKey = result.address;
+    } else if (result && result.publicKey) {
+      publicKey = result.publicKey;
+    } else {
       throw new Error("Freighter access denied.");
+    }
+
+    if (!publicKey || typeof publicKey !== 'string') {
+      throw new Error("Invalid public key from Freighter.");
     }
 
     return { address: publicKey, type: WALLET_TYPES.FREIGHTER };
@@ -47,9 +59,7 @@ export const connectFreighter = async () => {
 };
 
 export const connectAlbedo = async () => {
-  const result = await albedo.publicKey({
-    token: "Login"
-  });
+  const result = await albedo.publicKey({ token: "Login" });
   return { address: result.pubkey, type: WALLET_TYPES.ALBEDO };
 };
 
@@ -67,7 +77,6 @@ export const signTransaction = async (transactionXdr, walletType, network, netwo
       const result = await signFreighter(transactionXdr, {
         networkPassphrase: "Test SDF Network ; September 2015",
       });
-
       if (result && result.signedTxXdr) return result.signedTxXdr;
       if (typeof result === "string") return result;
       throw new Error("Freighter signing failed - no XDR returned");

@@ -4,6 +4,7 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { useWallet } from "../WalletContext";
 import { signTransaction } from "../walletService";
 import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
+import { shortenAddress } from "../utils";
 import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
 
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
@@ -26,7 +27,7 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
         name: nft.name,
         image: nft.imageId || nft.image || "",
         price: "10",
-        owner: `${walletAddress?.slice(0, 6)}...${walletAddress?.slice(-4)}`,
+        owner: shortenAddress(walletAddress),
         ownerFull: walletAddress,
         listed: false,
       }))

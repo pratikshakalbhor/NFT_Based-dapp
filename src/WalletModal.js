@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { X, LogOut, Wallet, ExternalLink } from 'lucide-react';
 import { useWallet } from './WalletContext';
+import { shortenAddress } from './utils';
 import { WALLET_TYPES, checkConnection } from './walletService';
 import './WalletModal.css';
 
@@ -49,8 +50,6 @@ const WalletModal = () => {
       setModalOpen(false);
     }
   };
-
-  const shortenAddress = (addr) => `${addr.slice(0, 6)}...${addr.slice(-6)}`;
 
   return (
     <AnimatePresence>

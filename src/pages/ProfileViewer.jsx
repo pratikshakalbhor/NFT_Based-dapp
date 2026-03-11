@@ -9,6 +9,7 @@ import {
     xdr,
 } from 'soroban-client';
 import { HORIZON_URL, RPC_URL, CONTRACT_ID } from '../constants';
+import { shortenAddress } from '../utils';
 
 const StatItem = ({ label, value, loading }) => (
     <div className="stat-item">
@@ -147,11 +148,6 @@ const ProfileViewer = () => {
         navigator.clipboard.writeText(walletAddress);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-    };
-
-    const shortenAddress = (addr) => {
-        if (!addr) return '';
-        return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     };
 
     // Generate deterministic gradient and initials from address

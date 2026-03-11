@@ -100,16 +100,25 @@ export const WalletProvider = ({ children }) => {
     }
   };
 
-  const disconnectWallet = (address) => {
-    const target = address || walletAddress;
-    const newWallets = connectedWallets.filter(w => w.address !== target);
+  const disconnectWallet = (addressToDisconnect) => {
+    // If no specific address is passed, we disconnect the active wallet.
+    const activeAddress = typeof walletAddress === 'string' ? walletAddress : walletAddress?.address;
+    const targetAddress = addressToDisconnect || activeAddress;
+
+    if (!targetAddress) return;
+
+    // Filter out the wallet to be disconnected.
+    const newWallets = connectedWallets.filter(w => w.address !== targetAddress);
     setConnectedWallets(newWallets);
 
-    if (target === walletAddress) {
+    // If we just disconnected the active wallet, we need to select a new active wallet.
+    if (targetAddress === activeAddress) {
       if (newWallets.length > 0) {
+        // Set the new active wallet to the first one in the remaining list.
         setWalletAddress(newWallets[0].address);
         setWalletType(newWallets[0].type);
       } else {
+        // If no wallets are left, clear the active wallet state.
         setWalletAddress('');
         setWalletType('');
       }

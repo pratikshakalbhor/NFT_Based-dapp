@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { shortenAddress } from "../utils";
 import * as StellarSdk from "@stellar/stellar-sdk";
 
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
@@ -28,8 +29,8 @@ const getActivityInfo = (tx, walletAddress) => {
       type: isSend ? "SEND" : "RECEIVE",
       label: isSend ? "Payment Sent" : "Payment Received",
       description: isSend
-        ? `Sent ${parseFloat(op.amount || 0).toFixed(2)} XLM to ${op.to?.slice(0, 6)}...${op.to?.slice(-4)}`
-        : `Received ${parseFloat(op.amount || 0).toFixed(2)} XLM from ${op.from?.slice(0, 6)}...${op.from?.slice(-4)}`,
+        ? `Sent ${parseFloat(op.amount || 0).toFixed(2)} XLM to ${shortenAddress(op.to)}`
+        : `Received ${parseFloat(op.amount || 0).toFixed(2)} XLM from ${shortenAddress(op.from)}`,
       icon: isSend ? "↑" : "↓",
       gradient: isSend
         ? "linear-gradient(135deg, #f59e0b, #d97706)"
