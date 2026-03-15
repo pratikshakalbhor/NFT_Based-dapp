@@ -14,6 +14,7 @@ const WalletModal = () => {
     connectWallet,
     connectedWallets,
     walletAddress,
+    walletType,
     switchWallet,
     disconnectWallet
   } = useWallet();
@@ -148,7 +149,7 @@ const WalletModal = () => {
                     <div className="wallet-description">Stellar Extension</div>
                   </div>
                 </div>
-                {available.freighter && (
+                {(available.freighter || walletType === WALLET_TYPES.FREIGHTER) && (
                   <div className="connected-check">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <polyline points="20 6 9 17 4 12" />
@@ -165,6 +166,13 @@ const WalletModal = () => {
                     <div className="wallet-description">Web Wallet</div>
                   </div>
                 </div>
+                {walletType === WALLET_TYPES.ALBEDO && (
+                  <div className="connected-check">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                )}
               </button>
 
               <button className="wallet-option-btn" onClick={() => handleConnect(WALLET_TYPES.XBULL)} disabled={connecting}>

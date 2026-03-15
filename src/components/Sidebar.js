@@ -8,7 +8,7 @@ import {
   ImagePlus,
   Images,
   Store,
-  Handshake,
+  Briefcase,
   Activity,
   User,
   Settings,
@@ -57,9 +57,7 @@ const SettingsModal = ({ isDark, toggleTheme, onClose }) => {
           <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Settings</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: isDark ? '#fff' : '#000', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
         </div>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Theme Toggle */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', borderRadius: '12px' }}>
             <span style={{ fontWeight: 600 }}>Theme</span>
             <button
@@ -77,14 +75,10 @@ const SettingsModal = ({ isDark, toggleTheme, onClose }) => {
               {isDark ? 'Dark' : 'Light'}
             </button>
           </div>
-
-          {/* Network Info */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', borderRadius: '12px' }}>
             <span style={{ fontWeight: 600 }}>Network</span>
             <span style={{ color: isDark ? '#a78bfa' : '#7c3aed', background: isDark ? 'rgba(124,58,237,0.15)' : 'rgba(124,58,237,0.1)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 700 }}>Testnet</span>
           </div>
-
-          {/* Version Info */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)', borderRadius: '12px' }}>
             <span style={{ fontWeight: 600 }}>Version</span>
             <span style={{ opacity: 0.7, fontSize: '0.9rem' }}>1.0.0</span>
@@ -94,7 +88,6 @@ const SettingsModal = ({ isDark, toggleTheme, onClose }) => {
     </motion.div>
   );
 };
-
 
 const Sidebar = ({ walletAddress, onDisconnect }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -107,15 +100,16 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
     return `${addr.slice(0, 5)}...${addr.slice(-5)}`;
   };
 
+  // ── Navigation links — Jobs (Escrow) वर ठेवलं, simple नावं ──
   const links = [
-    { to: "/", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-    { to: "/payment", icon: <CreditCard size={18} />, label: "Payment" },
-    { to: "/mint", icon: <ImagePlus size={18} />, label: "Mint NFT" },
-    { to: "/gallery", icon: <Images size={18} />, label: "Gallery" },
-    { to: "/marketplace", icon: <Store size={18} />, label: "Marketplace" },
-    { to: "/escrow", icon: <Handshake size={18} />, label: "Escrow" },
-    { to: "/activity", icon: <Activity size={18} />, label: "Activity" },
-    { to: "/profile", icon: <User size={18} />, label: "Profile" }
+    { to: "/",           icon: <LayoutDashboard size={18} />, label: "Dashboard" },
+    { to: "/escrow",     icon: <Briefcase size={18} />,       label: "Jobs",        badge: "NEW" },
+    { to: "/payment",    icon: <CreditCard size={18} />,      label: "Payment" },
+    { to: "/mint",       icon: <ImagePlus size={18} />,       label: "Mint NFT" },
+    { to: "/gallery",    icon: <Images size={18} />,          label: "Gallery" },
+    { to: "/marketplace",icon: <Store size={18} />,           label: "Marketplace" },
+    { to: "/activity",   icon: <Activity size={18} />,        label: "Activity" },
+    { to: "/profile",    icon: <User size={18} />,            label: "Profile" },
   ];
 
   const handleLogout = () => {
@@ -123,7 +117,6 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
     navigate('/login');
   };
 
-  // Theme-aware styles based on user spec
   const themeStyles = {
     sidebarBg: isDark ? "rgba(13, 17, 28, 0.98)" : "rgba(255,255,255,0.98)",
     activeLinkBg: isDark ? "rgba(99, 102, 241, 0.2)" : "rgba(99,102,241,0.1)",
@@ -155,8 +148,7 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
       width: "240px",
       height: "100vh",
       position: "fixed",
-      top: 0,
-      left: 0,
+      top: 0, left: 0,
       background: themeStyles.sidebarBg,
       borderRight: `1px solid ${themeStyles.borderColor}`,
       display: "flex",
@@ -165,15 +157,8 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
       backdropFilter: "blur(12px)",
       boxShadow: isDark ? 'none' : '2px 0 10px rgba(0,0,0,0.05)'
     }}>
-      {/* App Logo */}
-      <div style={{
-        padding: "32px 24px",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        background: "transparent",
-        marginBottom: "16px"
-      }}>
+      {/* Logo */}
+      <div style={{ padding: "32px 24px", display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
         <div style={{
           width: "36px", height: "36px",
           background: "linear-gradient(135deg, #6366f1, #4f46e5)",
@@ -185,7 +170,7 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
         <span style={{ color: themeStyles.logoText, fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px" }}>NFT dApp</span>
       </div>
 
-      {/* Navigation Links */}
+      {/* Nav Links */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {links.map((link) => (
           <NavLink
@@ -197,113 +182,94 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
           >
             {({ isActive }) => (
               <>
-                <span style={{ 
-                  display: "flex", 
-                  alignItems: "center",
+                <span style={{
+                  display: "flex", alignItems: "center",
                   color: isActive ? "#6366f1" : isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"
                 }}>
                   {link.icon}
                 </span>
-                {link.label}
+                <span style={{ flex: 1 }}>{link.label}</span>
+                {/* "Jobs" label वर highlight badge */}
+                {link.badge && (
+                  <span style={{
+                    fontSize: "0.6rem", fontWeight: 700,
+                    background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                    color: "#fff",
+                    padding: "2px 6px", borderRadius: "6px",
+                    letterSpacing: "0.5px"
+                  }}>
+                    {link.badge}
+                  </span>
+                )}
               </>
             )}
           </NavLink>
         ))}
 
-        {/* Separator before settings */}
-        <div style={{ margin: "16px 20px", borderTop: `1px solid ${themeStyles.borderColor}` }}></div>
+        {/* Divider */}
+        <div style={{ margin: "16px 20px", borderTop: `1px solid ${themeStyles.borderColor}` }} />
 
+        {/* Settings */}
         <button
           onClick={() => setIsSettingsOpen(true)}
           style={{
             display: "flex", alignItems: "center", gap: "12px",
             padding: "12px 20px", margin: "4px 12px", width: "calc(100% - 24px)",
-            borderRadius: "8px", textDecoration: "none", fontWeight: 600,
-            fontSize: "0.95rem", transition: "all 0.2s ease",
+            borderRadius: "8px", fontWeight: 600, fontSize: "0.95rem",
             background: "transparent", border: "none",
             borderLeft: "3px solid transparent",
-            color: themeStyles.inactiveLinkColor, cursor: "pointer",
-            textAlign: "left"
+            color: themeStyles.inactiveLinkColor, cursor: "pointer", textAlign: "left"
           }}
         >
-          <span style={{ 
-            display: "flex", 
-            alignItems: "center",
-            color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"
-          }}>
+          <span style={{ display: "flex", alignItems: "center", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)" }}>
             <Settings size={18} />
           </span>
           Settings
         </button>
 
+        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
           style={{
             display: "flex", alignItems: "center", gap: "12px",
             padding: "12px 20px", margin: "4px 12px", width: "calc(100% - 24px)",
-            borderRadius: "8px", textDecoration: "none", fontWeight: 600,
-            fontSize: "0.95rem", transition: "all 0.2s ease",
+            borderRadius: "8px", fontWeight: 600, fontSize: "0.95rem",
             background: "transparent", border: "none",
             borderLeft: "3px solid transparent",
-            color: themeStyles.inactiveLinkColor, cursor: "pointer",
-            textAlign: "left"
+            color: themeStyles.inactiveLinkColor, cursor: "pointer", textAlign: "left"
           }}
         >
-          <span style={{ 
-            display: "flex", 
-            alignItems: "center",
-            color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"
-          }}>
+          <span style={{ display: "flex", alignItems: "center", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)" }}>
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </span>
           {isDark ? 'Light Mode' : 'Dark Mode'}
         </button>
       </div>
 
-      {/* User Section / Bottom */}
-      <div style={{
-        padding: "20px 16px",
-        borderTop: `1px solid ${themeStyles.borderColor}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px"
-      }}>
+      {/* Wallet + Logout */}
+      <div style={{ padding: "20px 16px", borderTop: `1px solid ${themeStyles.borderColor}`, display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{
-          background: themeStyles.walletBadgeBg,
-          padding: "12px",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
+          background: themeStyles.walletBadgeBg, padding: "12px", borderRadius: "12px",
+          display: "flex", alignItems: "center", gap: "10px",
           border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.3)'}`
         }}>
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }}></div>
+          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
           <span style={{ color: themeStyles.activeLinkColor, fontSize: "0.85rem", fontFamily: "monospace", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
             <Wallet size={14} />
             {shortenAddress(walletAddress)}
           </span>
         </div>
-
         <button
           onClick={handleLogout}
           style={{
-            width: "100%",
-            padding: "12px",
+            width: "100%", padding: "12px",
             background: isDark ? "rgba(239,68,68,0.1)" : "rgba(239,68,68,0.05)",
             border: isDark ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(239,68,68,0.3)",
-            borderRadius: "12px",
-            color: "#ef4444",
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            transition: "all 0.2s"
+            borderRadius: "12px", color: "#ef4444", fontWeight: 600, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
           }}
         >
-          <LogOut size={16} />
-          Logout
+          <LogOut size={16} /> Logout
         </button>
       </div>
     </div>
@@ -315,44 +281,29 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
         {isSettingsOpen && <SettingsModal isDark={isDark} toggleTheme={toggleTheme} onClose={() => setIsSettingsOpen(false)} />}
       </AnimatePresence>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        {sidebarContent}
-      </div>
+      {/* Desktop */}
+      <div className="hidden md:block">{sidebarContent}</div>
 
-      {/* Mobile Hamburger Button */}
-      <div className="md:hidden fixed top-0 left-0 w-full z-40 p-4 flex justify-between items-center" style={{ background: themeStyles.sidebarBg, backdropFilter: "blur(10px)", borderBottom: `1px solid ${themeStyles.borderColor}` }}>
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 w-full z-40 p-4 flex justify-between items-center"
+        style={{ background: themeStyles.sidebarBg, backdropFilter: "blur(10px)", borderBottom: `1px solid ${themeStyles.borderColor}` }}>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg, #6366f1, #4f46e5)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>💎</div>
           <span style={{ color: themeStyles.logoText, fontWeight: 700 }}>NFT dApp</span>
         </div>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          style={{ background: "transparent", border: "none", color: themeStyles.activeLinkColor, fontSize: "24px", cursor: "pointer" }}
-        >
-          ☰
-        </button>
+        <button onClick={() => setIsOpen(!isOpen)} style={{ background: "transparent", border: "none", color: themeStyles.activeLinkColor, fontSize: "24px", cursor: "pointer" }}>☰</button>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile overlay */}
       <AnimatePresence>
         {isOpen && (
           <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              style={{
-                position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-                background: "rgba(0,0,0,0.6)", zIndex: 45, backdropFilter: "blur(4px)"
-              }}
+              style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", zIndex: 45, backdropFilter: "blur(4px)" }}
               className="md:hidden"
             />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
+            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               style={{ zIndex: 50, position: "fixed", top: 0, left: 0 }}
               className="md:hidden"
@@ -364,13 +315,8 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
       </AnimatePresence>
 
       <style>{`
-        @media (min-width: 768px) {
-          .md\\:block { display: block !important; }
-          .md\\:hidden { display: none !important; }
-        }
-        @media (max-width: 767px) {
-          .hidden { display: none; }
-        }
+        @media (min-width: 768px) { .md\\:block { display: block !important; } .md\\:hidden { display: none !important; } }
+        @media (max-width: 767px) { .hidden { display: none; } }
       `}</style>
     </>
   );

@@ -107,25 +107,38 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
     try {
       if (!file) throw new Error("No file selected.");
 
-      // Step 1: Upload to IPFS
-      setStatus("Uploading image to IPFS...");
-      const cid = await uploadToPinata(file);
-      const tokenURI = `https://gateway.pinata.cloud/ipfs/${cid}`;
-
+      // Diagnostic: confirm what walletType and NETWORK look like at runtime
       console.log("---------------------------------------------------");
       console.log("🚀 STARTING MINT");
       console.log("📝 Contract:", CONTRACT_ID);
       console.log("👤 Wallet:", walletAddress);
-      console.log("🖼️ URI:", tokenURI);
-      console.log("📛 Name:", name);
+      console.log("🔑 walletType:", walletType);
+      console.log("🌐 NETWORK constant:", NETWORK);        // should log "TESTNET"
+      console.log("🔐 NETWORK_PASSPHRASE:", NETWORK_PASSPHRASE);
       console.log("---------------------------------------------------");
 
-      // Step 2: Get account
-      setStatus("Building transaction...");
-      const sourceAccount = await SOROBAN_SERVER.getAccount(walletAddress);
-      console.log("✅ Account loaded:", sourceAccount.accountId());
+      // Step 1: Upload to IPFS
+      setStatus("Uploading image to IPFS...");
+      const cid = await uploadToPinata(file);
+      const tokenURI = `https://gateway.pinata.cloud/ipfs/${cid}`;
+      console.log("🖼️ URI:", tokenURI);
+      console.log("📛 Name:", name);
 
-      // Step 3: Build tx - fee: "1000000" = max 1 XLM for Soroban
+      // Step 2: Load account via Soroban RPC
+      setStatus("Building transaction...");
+      let sourceAccount;
+      try {
+        sourceAccount = await SOROBAN_SERVER.getAccount(walletAddress);
+        console.log("✅ Account loaded:", sourceAccount.accountId());
+      } catch (e) {
+        throw new Error(
+          "Account not found on Stellar testnet. " +
+            "Fund your wallet at: https://friendbot.stellar.org/?addr=" +
+            walletAddress
+        );
+      }
+
+      // Step 3: Build transaction
       const tx = new StellarSdk.TransactionBuilder(sourceAccount, {
         fee: "1000000",
         networkPassphrase: NETWORK_PASSPHRASE,
@@ -157,81 +170,86 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       console.log("✅ Transaction assembled");
 
       // Step 6: Sign
-      setStatus("Please sign in your wallet...");
-      const signedXDR = await signTransaction(
-        assembledTx.toXDR(),
-        walletType,
-        NETWORK,
-        NETWORK_PASSPHRASE
+      // NOTE: NETWORK = "TESTNET" (uppercase) is passed here.
+      // walletService.js converts it to lowercase "testnet" for Albedo internally.
+      setStatus(
+        walletType === "ALBEDO"
+          ? "Albedo popup opening — please sign in the popup window..."
+          : "Please sign in your wallet..."
       );
-      if (!signedXDR) throw new Error("User cancelled signing");
-      console.log("✅ Transaction signed");
 
-      // Step 7: Convert XDR
-      const signedTxXdr =
-        typeof signedXDR === "object" && signedXDR.signedTxXdr
-          ? signedXDR.signedTxXdr
-          : signedXDR;
+      let signedTxXdr;
+      try {
+        signedTxXdr = await signTransaction(
+          assembledTx.toXDR(),
+          walletType,
+          NETWORK,           // "TESTNET" — walletService handles lowercase conversion
+          NETWORK_PASSPHRASE
+        );
+      } catch (signErr) {
+        console.error("❌ Signing error:", signErr);
+        throw new Error(signErr.message || "Signing failed or was cancelled");
+      }
 
+      if (!signedTxXdr) throw new Error("No signed XDR returned from wallet.");
+      console.log("✅ Transaction signed, XDR length:", signedTxXdr.length);
+
+      // Step 7: Reconstruct Transaction object from signed XDR
       const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
 
-      // Step 8: Submit
-      setStatus("Submitting transaction...");
+      // Step 8: Submit via Soroban RPC (NOT Horizon — Horizon rejects Soroban txs)
+      setStatus("Submitting to Soroban RPC...");
       const response = await SOROBAN_SERVER.sendTransaction(signedTx);
       console.log("📤 Submit response:", response);
 
       if (response.status === "ERROR") {
         console.error("❌ ERROR response:", response);
-        if (response.errorResult) {
+        throw new Error(
+          `Transaction submission failed: ${
+            response.errorResult?.toXDR
+              ? response.errorResult.toXDR("base64")
+              : JSON.stringify(response)
+          }`
+        );
+      }
+
+      setTxHash(response.hash);
+
+      // Step 9: Poll for confirmation
+      setStatus("Waiting for confirmation...");
+      let finalStatus = response.status;
+
+      if (finalStatus !== "SUCCESS") {
+        for (let i = 0; i < 20; i++) {
+          await new Promise((r) => setTimeout(r, 1500));
           try {
-            const xdr = response.errorResult.toXDR("base64");
-            const decoded = StellarSdk.xdr.TransactionResult.fromXDR(xdr, "base64");
-            const code = decoded.result().switch().name;
-            console.error("🔴 Error code:", code);
-            if (code === "txBAD_AUTH") {
-              throw new Error("Auth Error: Please disconnect and reconnect your Freighter wallet.");
+            const poll = await SOROBAN_SERVER.getTransaction(response.hash);
+            console.log(`⏳ Poll ${i + 1}: ${poll.status}`);
+            if (poll.status !== "NOT_FOUND") {
+              finalStatus = poll.status;
+              if (finalStatus === "SUCCESS") break;
+              if (finalStatus === "FAILED") throw new Error("Transaction failed during execution.");
             }
-            if (code === "txINSUFFICIENT_FEE") {
-              throw new Error("Insufficient fee. Please try again.");
-            }
-            throw new Error(`Transaction failed: ${code}`);
-          } catch (decodeErr) {
-            if (decodeErr.message.includes("Transaction failed") || decodeErr.message.includes("Auth Error")) {
-              throw decodeErr;
-            }
+          } catch (pollErr) {
+            if (pollErr.message?.includes("Transaction failed")) throw pollErr;
+            console.warn(`Poll ${i + 1} error (non-fatal):`, pollErr.message);
           }
         }
-        throw new Error("Transaction submission failed. Status: ERROR");
       }
 
-      if (response.status !== "PENDING") {
-        throw new Error(`Unexpected status: ${response.status}`);
-      }
-
-      // Step 9: Poll
-      setStatus("Waiting for confirmation...");
-      let finalStatus;
-      for (let i = 0; i < 20; i++) {
-        await new Promise((r) => setTimeout(r, 2000));
-        try {
-          finalStatus = await SOROBAN_SERVER.getTransaction(response.hash);
-          console.log(`⏳ Poll ${i + 1}:`, finalStatus.status);
-          if (finalStatus.status !== "NOT_FOUND") break;
-        } catch (pollErr) {
-          console.warn(`Poll ${i + 1}:`, pollErr);
-        }
-      }
-
-      if (finalStatus?.status === "FAILED") {
-        throw new Error("Transaction failed after submission.");
+      if (finalStatus !== "SUCCESS") {
+        throw new Error(`Transaction timed out or failed. Final status: ${finalStatus}`);
       }
 
       // Step 10: Success
-      console.log("🎉 NFT Minted!");
-      setStatus("Success! NFT Minted.");
+      console.log("🎉 NFT Minted! Hash:", response.hash);
+      setStatus("NFT Minted Successfully!");
       setStatusType("success");
       setTxHash(response.hash);
-      setNfts((prev) => [...prev, { name, imageId: tokenURI, assetCode: "NFT", issuer: CONTRACT_ID }]);
+      setNfts((prev) => [
+        ...prev,
+        { name, imageId: tokenURI, assetCode: "NFT", issuer: CONTRACT_ID },
+      ]);
       setName("");
       setDescription("");
       setFile(null);
@@ -248,6 +266,8 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
         msg = `Simulation Error: ${msg}`;
       } else if (msg.includes("Backend server")) {
         msg = "Backend not running. Run: cd backend && node server.js";
+      } else if (msg.includes("popup") || msg.includes("Albedo error")) {
+        msg = `${msg} — In Chrome: click the popup-blocked icon in the address bar and allow popups.`;
       }
       setStatus(msg);
       setStatusType("warning");
@@ -394,8 +414,8 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
                 {status && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                     className={`p-4 rounded-xl text-sm font-medium border ${statusType === "success" ? "bg-green-500/10 border-green-500/20 text-green-400"
-                        : statusType === "warning" ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
-                          : "bg-blue-500/10 border-blue-500/20 text-blue-400"}`}>
+                      : statusType === "warning" ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
+                        : "bg-blue-500/10 border-blue-500/20 text-blue-400"}`}>
                     {status}
                   </motion.div>
                 )}
