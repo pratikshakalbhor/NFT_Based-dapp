@@ -4,7 +4,7 @@ import "./App.css";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import NavBar from "./components/navBar";
 import { HORIZON_URL } from "./constants";
-import Background from "./components/Background"; 
+import Background from "./components/Background";
 import { fetchNFTs } from "./utils/soroban";
 import PaymentPage from "./pages/PaymentPage";
 import MintPage from "./pages/MintPage";
@@ -12,9 +12,11 @@ import GalleryPage from "./pages/GalleryPage";
 import MarketplacePage from "./pages/MarketplacePage";
 import ActivityPage from "./pages/ActivityPage";
 import EscrowPage from "./pages/EscrowPage";
+import DashboardPage from "./pages/DashboardPage";
 import { useWallet } from "./WalletContext";
 import WalletModal from "./WalletModal";
 import ProfilePage from "./components/ProfilePage";
+import { errorHandler } from "./utils/errorHandler";
 
 
 function App() {
@@ -22,25 +24,46 @@ function App() {
   const [balance, setBalance] = useState("0");
   const [nfts, setNfts] = useState([]);
   const [accountDetails, setAccountDetails] = useState(null);
+  const [jobsPosted, setJobsPosted] = useState(0);
 
   const server = useMemo(
     () => new StellarSdk.Horizon.Server(HORIZON_URL),
     []
   );
 
+  function showError(message, field) {
+    // if (field) {
+    //   formErrors.value = { ...formErrors.value, [field]: message };
+    // }
+    // else {
+    //   toast.error(message);
+    // }
+    alert(message);
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       if (walletAddress) {
         try {
           const account = await server.loadAccount(walletAddress);
+
           setAccountDetails(account);
           const xlmBalance = account.balances.find(
             (b) => b.asset_type === "native"
           );
           setBalance(parseFloat(xlmBalance.balance).toFixed(2));
+
         } catch (e) {
           setAccountDetails(null);
-          console.error("Failed to fetch balance:", e);
+          const errorMessage = errorHandler(e);
+
+          showError(
+            `Error loading account (${walletAddress}): ${errorMessage}.`,
+            "accountError"
+          );
+
+
+          console.error("Account error:", e);
           setBalance("N/A");
         }
 
@@ -64,7 +87,7 @@ function App() {
       <div className={`app-container relative z-10 ${walletAddress ? "loggedin" : "loggedout"}`}>
         <WalletModal />
         {walletAddress && <NavBar />}
-        
+
         <Routes>
           {/* ✅ Mobile Responsive Login Page */}
           <Route path="/login" element={
@@ -108,14 +131,14 @@ function App() {
                     marginBottom: "10px",
                     lineHeight: 1.2,
                   }}>Stellar NFT dApp</h1>
-                  
+
                   <p style={{
                     fontSize: "clamp(0.85rem, 3vw, 1rem)",
                     color: "rgba(255,255,255,0.6)",
                     marginBottom: "32px",
                     lineHeight: 1.5,
                   }}>Connect your wallet to get started</p>
-                  
+
                   <button
                     style={{
                       width: "100%",
@@ -154,12 +177,12 @@ function App() {
             element={
               walletAddress ? (
                 <div className="pages-container">
-                    <PaymentPage
-                      walletAddress={walletAddress}
-                      balance={balance}
-                      setBalance={setBalance}
-                      server={server}
-                    />
+                  <PaymentPage
+                    walletAddress={walletAddress}
+                    balance={balance}
+                    setBalance={setBalance}
+                    server={server}
+                  />
                 </div>
               ) : <Navigate to="/login" replace />
             }
@@ -169,13 +192,13 @@ function App() {
             element={
               walletAddress ? (
                 <div className="pages-container">
-                    <MintPage
-                      walletAddress={walletAddress}
-                      server={server}
-                      setBalance={setBalance}
-                      setNfts={setNfts}
-                      nfts={nfts}
-                    />
+                  <MintPage
+                    walletAddress={walletAddress}
+                    server={server}
+                    setBalance={setBalance}
+                    setNfts={setNfts}
+                    nfts={nfts}
+                  />
                 </div>
               ) : <Navigate to="/login" replace />
             }
@@ -190,75 +213,81 @@ function App() {
               ) : <Navigate to="/login" replace />
             }
           />
-          <Route 
-            path="/gallery" 
+          <Route
+            path="/gallery"
             element={
               walletAddress ? (
                 <div className="pages-container">
                   <GalleryPage nfts={nfts} />
                 </div>
               ) : <Navigate to="/login" replace />
-            } 
+            }
           />
-          <Route 
-            path="/marketplace" 
+          <Route
+            path="/marketplace"
             element={
               walletAddress ? (
                 <div className="pages-container">
                   <MarketplacePage walletAddress={walletAddress} nfts={nfts} server={server} />
                 </div>
               ) : <Navigate to="/login" replace />
-            } 
+            }
           />
-          <Route 
-            path="/activity" 
+          <Route
+            path="/activity"
             element={
               walletAddress ? (
                 <div className="pages-container">
                   <ActivityPage walletAddress={walletAddress} />
                 </div>
               ) : <Navigate to="/login" replace />
-            } 
+            }
           />
-          <Route 
-            path="/escrow" 
+          <Route
+            path="/dashboard"
             element={
               walletAddress ? (
                 <div className="pages-container">
-                  <EscrowPage walletAddress={walletAddress} server={server} />
+                  <DashboardPage
+                    walletAddress={walletAddress}
+                    balance={balance}
+                    nfts={nfts}
+                    jobs={[]}
+                  />
                 </div>
               ) : <Navigate to="/login" replace />
-            } 
+            }
           />
-          <Route 
-            path="/escrow" 
+          <Route
+            path="/escrow"
             element={
               walletAddress ? (
                 <div className="pages-container">
-                  <EscrowPage walletAddress={walletAddress} server={server} />
+                  <EscrowPage
+                    walletAddress={walletAddress}
+                    server={server}
+                    onJobPosted={() => setJobsPosted(jobsPosted + 1)}
+                    onJobAccepted={(jobId) => {
+                      console.log("Job accepted:", jobId);
+                    }}
+                    onWorkSubmitted={() => console.log("Work Submitted")}
+                    onPaymentReleased={async (jobId) => {
+                      // Refresh balance
+                      try {
+                        const account = await server.loadAccount(walletAddress);
+                        const xlm = account.balances.find(b => b.asset_type === "native");
+                        setBalance(parseFloat(xlm.balance).toFixed(2));
+                      } catch (e) { console.error("Balance refresh error:", e); }
+                      // Refresh NFTs
+                      try {
+                        const userNfts = await fetchNFTs(walletAddress);
+                        setNfts(userNfts);
+                      } catch (e) { console.error("NFT refresh error:", e); }
+                    }}
+                  />
                 </div>
               ) : <Navigate to="/login" replace />
-            } 
-          />
-         <Route 
-            path="/escrow" 
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <EscrowPage walletAddress={walletAddress} server={server} />
-                </div>
-              ) : <Navigate to="/login" replace />
-            } 
-          />
-         <Route 
-            path="/escrow" 
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <EscrowPage walletAddress={walletAddress} server={server} />
-                </div>
-              ) : <Navigate to="/login" replace />
-            } 
+            }
           />
         </Routes>
       </div>
