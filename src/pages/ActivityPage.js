@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { shortenAddress } from "../utils";
+
 import * as StellarSdk from "@stellar/stellar-sdk";
 
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
@@ -8,6 +9,7 @@ const HORIZON_URL = "https://horizon-testnet.stellar.org";
 const getActivityInfo = (tx, walletAddress) => {
   const ops = tx.operations || [];
   const op = ops[0] || {};
+
 
   if (op.type === "invoke_host_function") {
     const isSuccess = tx.successful;
@@ -43,6 +45,7 @@ const getActivityInfo = (tx, walletAddress) => {
     };
   }
   if (op.type === "create_account") {
+
     return {
       type: "CREATE",
       label: "Account Funded",
@@ -67,6 +70,7 @@ const getActivityInfo = (tx, walletAddress) => {
       bgColor: "rgba(6, 182, 212, 0.08)",
       borderColor: "rgba(6, 182, 212, 0.2)",
     };
+
   }
   return {
     type: "TX",
@@ -101,6 +105,7 @@ export default function ActivityPage({ walletAddress }) {
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
 
+
   useEffect(() => {
     const fetchActivity = async () => {
       if (!walletAddress) { setLoading(false); return; }
@@ -122,10 +127,12 @@ export default function ActivityPage({ walletAddress }) {
               return { ...tx, operations: [] };
             }
           })
+
         );
         setActivities(txsWithOps);
       } catch (e) {
         console.error("Failed to fetch activity:", e);
+
         setActivities([]);
       } finally {
         setLoading(false);
@@ -138,6 +145,7 @@ export default function ActivityPage({ walletAddress }) {
     if (filter === "all") return true;
     const { type } = getActivityInfo(tx, walletAddress);
     if (filter === "mint") return type === "MINT";
+
     if (filter === "payment") return type === "SEND" || type === "RECEIVE";
     return true;
   });
@@ -150,6 +158,7 @@ export default function ActivityPage({ walletAddress }) {
       return type === "SEND" || type === "RECEIVE";
     }).length,
   };
+
 
   return (
     <div style={{ minHeight: "100vh", padding: "2rem 1rem", fontFamily: "'Inter', sans-serif" }}>

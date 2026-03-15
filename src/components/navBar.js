@@ -5,13 +5,13 @@ import './navBar.css';
 
 const Gem = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/>
+    <path d="M6 3h12l4 6-10 13L2 9Z" /><path d="M11 3 8 9l4 13 4-13-3-6" />
   </svg>
 );
 
 const LogOut = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" />
   </svg>
 );
 
@@ -29,7 +29,7 @@ const NavBar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  
+
   const shortenAddress = (addr) => {
     if (!addr || typeof addr !== 'string') return '';
     return `${addr.slice(0, 5)}...${addr.slice(-5)}`;
@@ -37,6 +37,7 @@ const NavBar = () => {
 
   const NavLinks = ({ mobile = false }) => (
     <>
+      <NavLink to="/dashboard" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Dashboard</NavLink>
       <NavLink to="/" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Payment</NavLink>
       <NavLink to="/mint" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Mint NFT</NavLink>
       <NavLink to="/gallery" className={({ isActive }) => `${mobile ? 'mobile-link' : 'nav-link'} ${isActive ? 'active' : ''}`} onClick={() => setIsMobileMenuOpen(false)}>Gallery</NavLink>
@@ -49,7 +50,7 @@ const NavBar = () => {
 
   return (
     <>
-    <style>{`
+      <style>{`
       .wallet-widget-container {
         display: flex;
         align-items: center;
@@ -98,59 +99,59 @@ const NavBar = () => {
         color: #ef4444;
       }
     `}</style>
-    <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
-      <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-white hover:opacity-80 transition-opacity">
-        <Gem className="w-5 h-5 text-purple-400" />
-        NFT dApp
-      </Link>
+      <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
+        <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-white hover:opacity-80 transition-opacity">
+          <Gem className="w-5 h-5 text-purple-400" />
+          NFT dApp
+        </Link>
 
-      <div className="nav-links">
-        <NavLinks />
-      </div>
+        <div className="nav-links">
+          <NavLinks />
+        </div>
 
-      <div className="nav-wallet">
-        {walletAddress && typeof walletAddress === 'string' ? (
-          <div className="wallet-widget-container">
-            <span 
-              className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-green-500/20 transition-colors border border-green-500/20"
+        <div className="nav-wallet">
+          {walletAddress && typeof walletAddress === 'string' ? (
+            <div className="wallet-widget-container">
+              <span
+                className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-green-500/20 transition-colors border border-green-500/20"
+                onClick={() => setModalOpen(true)}
+              >
+                {shortenAddress(walletAddress)}
+              </span>
+              <button
+                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300 text-sm font-medium"
+                onClick={() => {
+                  disconnectWallet();
+                  navigate('/login');
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
               onClick={() => setModalOpen(true)}
+              className="connect-btn"
             >
-              {shortenAddress(walletAddress)}
-            </span>
-            <button 
-              className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300 text-sm font-medium"
-              onClick={() => {
-                disconnectWallet();
-                navigate('/login');
-              }} 
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
+              Connect Wallet
             </button>
-          </div>
-        ) : (
-          <button 
-            onClick={() => setModalOpen(true)}
-            className="connect-btn"
-          >
-            Connect Wallet
-          </button>
-        )}
+          )}
 
-        <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? '✕' : '☰'}
-        </button>
-      </div>
-
-      <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
-        <NavLinks mobile />
-        {!walletAddress && (
-          <button onClick={() => { setModalOpen(true); setIsMobileMenuOpen(false); }} className="connect-btn">
-            Connect Wallet
+          <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? '✕' : '☰'}
           </button>
-        )}
-      </div>
-    </nav>
+        </div>
+
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+          <NavLinks mobile />
+          {!walletAddress && (
+            <button onClick={() => { setModalOpen(true); setIsMobileMenuOpen(false); }} className="connect-btn">
+              Connect Wallet
+            </button>
+          )}
+        </div>
+      </nav>
     </>
   );
 };
