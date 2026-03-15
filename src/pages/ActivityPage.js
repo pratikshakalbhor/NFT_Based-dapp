@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { shortenAddress } from "../utils";
+import { useTheme } from "../context/ThemeContext";
 
 import * as StellarSdk from "@stellar/stellar-sdk";
 
@@ -100,6 +101,7 @@ const formatDate = (dateStr) => {
 };
 
 export default function ActivityPage({ walletAddress }) {
+  const { isDark } = useTheme();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -166,8 +168,8 @@ export default function ActivityPage({ walletAddress }) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         .activity-row {
-          background: rgba(12, 12, 25, 0.7);
-          border: 1px solid rgba(255,255,255,0.06);
+          background: ${isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)"};
+          border: 1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"};
           border-radius: 18px;
           padding: 20px 24px;
           cursor: pointer;
@@ -209,37 +211,38 @@ export default function ActivityPage({ walletAddress }) {
 
         .filter-pill {
           padding: 8px 20px; border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.08);
-          background: rgba(255,255,255,0.03);
-          color: #64748b; font-size: 0.82rem; font-weight: 600;
+          border: 1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"};
+          background: ${isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"};
+          color: ${isDark ? "#64748b" : "#475569"}; font-size: 0.82rem; font-weight: 600;
           cursor: pointer; transition: all 0.2s ease;
           letter-spacing: 0.02em;
         }
-        .filter-pill:hover { color: #94a3b8; border-color: rgba(255,255,255,0.15); }
+        .filter-pill:hover { color: ${isDark ? "#94a3b8" : "#1e293b"}; border-color: ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}; }
         .filter-pill.active {
-          background: rgba(139,92,246,0.15);
-          border-color: rgba(139,92,246,0.35); color: #c4b5fd;
+          background: ${isDark ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.1)"};
+          border-color: ${isDark ? "rgba(139,92,246,0.35)" : "rgba(139,92,246,0.3)"}; color: ${isDark ? "#c4b5fd" : "#6d28d9"};
         }
 
         .stat-card {
-          background: rgba(12,12,25,0.6);
-          border: 1px solid rgba(255,255,255,0.06);
+          background: ${isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)"};
+          border: 1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"};
           border-radius: 16px; padding: 16px 24px;
           text-align: center; flex: 1;
           backdrop-filter: blur(16px);
           transition: all 0.2s ease;
+          box-shadow: ${isDark ? "none" : "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)"};
         }
         .stat-card:hover {
           border-color: rgba(139,92,246,0.2);
-          background: rgba(139,92,246,0.05);
+          background: ${isDark ? "rgba(139,92,246,0.05)" : "rgba(139,92,246,0.03)"};
         }
 
         .tx-hash-box {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: ${isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"};
+          border: 1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)"};
           border-radius: 10px; padding: 10px 14px;
           font-family: 'Courier New', monospace;
-          font-size: 0.75rem; color: #475569;
+          font-size: 0.75rem; color: ${isDark ? "#475569" : "#64748b"};
           word-break: break-all; margin-top: 12px;
           transition: all 0.2s;
         }
@@ -249,7 +252,7 @@ export default function ActivityPage({ walletAddress }) {
           display: inline-flex; align-items: center; gap: 6px;
           padding: 7px 16px; border-radius: 10px;
           background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.25);
-          color: #a78bfa; text-decoration: none; font-size: 0.8rem; font-weight: 600;
+          color: ${isDark ? "#a78bfa" : "#7c3aed"}; text-decoration: none; font-size: 0.8rem; font-weight: 600;
           transition: all 0.2s ease; margin-top: 12px;
         }
         .explorer-btn:hover {
@@ -264,7 +267,7 @@ export default function ActivityPage({ walletAddress }) {
           100% { background-position: 400px 0; }
         }
         .skeleton {
-          background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+          background: ${isDark ? "linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%)" : "linear-gradient(90deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 100%)"};
           background-size: 400px 100%;
           animation: shimmer 1.6s ease-in-out infinite;
           border-radius: 10px;
@@ -289,17 +292,17 @@ export default function ActivityPage({ walletAddress }) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            style={{ fontSize: "2.8rem", fontWeight: 800, color: "white", marginBottom: "6px", letterSpacing: "-0.03em" }}
+            style={{ fontSize: "2.8rem", fontWeight: 800, color: isDark ? "#fff" : "#1a1a2e", marginBottom: "6px", letterSpacing: "-0.03em" }}
           >
             Activity{" "}
             <span style={{
               background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
+              WebkitBackgroundClip: "text", WebkitTextFillColor: isDark ? "transparent" : "#1a1a2e"
             }}>
               Feed
             </span>
           </motion.h1>
-          <p style={{ color: "#475569", fontSize: "0.95rem" }}>
+          <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.95rem" }}>
             A log of your recent on-chain transactions.
           </p>
         </div>
@@ -313,13 +316,13 @@ export default function ActivityPage({ walletAddress }) {
             style={{ display: "flex", gap: "12px", marginBottom: "28px" }}
           >
             {[
-              { label: "Total Txns", value: stats.total, color: "#a78bfa" },
-              { label: "NFT Mints", value: stats.mints, color: "#c4b5fd" },
-              { label: "Payments", value: stats.payments, color: "#93c5fd" },
+              { label: "Total Txns", value: stats.total, color: isDark ? "#a78bfa" : "#7c3aed" },
+              { label: "NFT Mints", value: stats.mints, color: isDark ? "#c4b5fd" : "#8b5cf6" },
+              { label: "Payments", value: stats.payments, color: isDark ? "#93c5fd" : "#3b82f6" },
             ].map((s) => (
               <div key={s.label} className="stat-card">
                 <div style={{ fontSize: "1.6rem", fontWeight: 800, color: s.color }}>{s.value}</div>
-                <div style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600, marginTop: "2px" }}>{s.label}</div>
+                <div style={{ fontSize: "0.75rem", color: isDark ? "#475569" : "#64748b", fontWeight: 600, marginTop: "2px" }}>{s.label}</div>
               </div>
             ))}
           </motion.div>
@@ -360,7 +363,8 @@ export default function ActivityPage({ walletAddress }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} style={{
-                background: "rgba(12,12,25,0.7)", border: "1px solid rgba(255,255,255,0.05)",
+                background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)", 
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
                 borderRadius: "18px", padding: "20px 24px",
                 display: "flex", gap: "16px", alignItems: "center",
               }}>
@@ -382,16 +386,16 @@ export default function ActivityPage({ walletAddress }) {
             animate={{ opacity: 1, scale: 1 }}
             style={{
               textAlign: "center", padding: "80px 20px",
-              background: "rgba(12,12,25,0.5)",
-              border: "1px solid rgba(255,255,255,0.05)",
+              background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
               borderRadius: "24px",
             }}
           >
             <div style={{ fontSize: "3.5rem", marginBottom: "16px", filter: "grayscale(0.3)" }}>📭</div>
-            <h3 style={{ color: "#64748b", fontSize: "1.1rem", fontWeight: 700, marginBottom: "8px" }}>
+            <h3 style={{ color: isDark ? "#64748b" : "#475569", fontSize: "1.1rem", fontWeight: 700, marginBottom: "8px" }}>
               No Activity Yet
             </h3>
-            <p style={{ color: "#334155", fontSize: "0.85rem" }}>
+            <p style={{ color: isDark ? "#334155" : "#64748b", fontSize: "0.85rem" }}>
               Transactions will appear here once you mint or send NFTs.
             </p>
           </motion.div>
@@ -411,7 +415,7 @@ export default function ActivityPage({ walletAddress }) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
                   className="activity-row"
-                  style={{ borderColor: isExpanded ? info.borderColor : "rgba(255,255,255,0.06)" }}
+                  style={{ borderColor: isExpanded ? info.borderColor : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)") }}
                   onClick={() => setExpandedId(isExpanded ? null : tx.id)}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -434,12 +438,12 @@ export default function ActivityPage({ walletAddress }) {
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                        <span style={{ color: "white", fontWeight: 700, fontSize: "0.95rem" }}>
+                        <span style={{ color: isDark ? "white" : "#1a1a2e", fontWeight: 700, fontSize: "0.95rem" }}>
                           {info.label}
                         </span>
                         {info.amount && (
                           <span style={{
-                            background: info.bgColor, color: info.textColor,
+                            background: info.bgColor, color: isDark ? info.textColor : undefined, // Keep specific text colors dynamic if needed, otherwise fallback is good
                             border: `1px solid ${info.borderColor}`,
                             borderRadius: "8px", padding: "2px 10px",
                             fontSize: "0.75rem", fontWeight: 700,
@@ -449,22 +453,23 @@ export default function ActivityPage({ walletAddress }) {
                         )}
                         <div
                           className="success-dot"
-                          style={{ background: tx.successful ? "#10b981" : "#ef4444",
+                          style={{
+                            background: tx.successful ? "#10b981" : "#ef4444",
                             boxShadow: `0 0 6px ${tx.successful ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)"}`,
                             marginLeft: "auto",
                           }}
                         />
                       </div>
-                      <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <p style={{ color: isDark ? "#64748b" : "#475569", fontSize: "0.82rem", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {info.description}
                       </p>
                     </div>
 
                     {/* Time */}
-                    <div style={{ color: "#334155", fontSize: "0.78rem", flexShrink: 0, textAlign: "right", paddingLeft: "8px" }}>
+                    <div style={{ color: isDark ? "#334155" : "#64748b", fontSize: "0.78rem", flexShrink: 0, textAlign: "right", paddingLeft: "8px" }}>
                       {formatDate(tx.created_at)}
                       <div style={{ marginTop: "3px" }}>
-                        <span style={{ fontSize: "0.65rem", color: isExpanded ? info.textColor : "#334155" }}>
+                        <span style={{ fontSize: "0.65rem", color: isExpanded ? info.textColor : (isDark ? "#334155" : "#64748b") }}>
                           {isExpanded ? "▲ less" : "▼ more"}
                         </span>
                       </div>
@@ -513,8 +518,8 @@ export default function ActivityPage({ walletAddress }) {
                             </span>
                             <span style={{
                               padding: "7px 14px", borderRadius: "10px",
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(255,255,255,0.07)",
+                              background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
+                              border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
                               color: "#475569", fontSize: "0.78rem", fontWeight: 600,
                             }}>
                               Fee: {(tx.fee_charged / 10000000).toFixed(7)} XLM
@@ -536,7 +541,7 @@ export default function ActivityPage({ walletAddress }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            style={{ textAlign: "center", color: "#1e293b", fontSize: "0.75rem", marginTop: "32px", letterSpacing: "0.05em" }}
+            style={{ textAlign: "center", color: isDark ? "#1e293b" : "#475569", fontSize: "0.75rem", marginTop: "32px", letterSpacing: "0.05em" }}
           >
             SHOWING {filtered.length} OF {activities.length} TRANSACTIONS • STELLAR TESTNET
           </motion.p>

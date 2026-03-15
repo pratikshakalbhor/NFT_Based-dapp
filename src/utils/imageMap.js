@@ -1,9 +1,10 @@
 // These imports expect an 'assets' folder inside the 'src' directory.
 // Your project structure should look like: src/assets/nft1.png
-import nft1 from '../assets/nft1.png';
-import nft2 from '../assets/nft2.png';
+// Temporarily using nft3.png for missing images to fix module not found errors
+import nft1 from '../assets/nft3.png';
+import nft2 from '../assets/nft3.png';
 import nft3 from '../assets/nft3.png';
-import placeholder from '../assets/placeholder.png';
+import placeholder from '../assets/nft3.png';
 
 const imageMap = {
   'IMG1': nft1,

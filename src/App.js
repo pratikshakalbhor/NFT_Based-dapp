@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import * as StellarSdk from "@stellar/stellar-sdk";
-import NavBar from "./components/navBar";
+import Sidebar from "./components/Sidebar";
 import { HORIZON_URL } from "./constants";
 import Background from "./components/Background";
 import { fetchNFTs } from "./utils/soroban";
@@ -18,9 +18,11 @@ import WalletModal from "./WalletModal";
 import ProfilePage from "./components/ProfilePage";
 import { errorHandler } from "./utils/errorHandler";
 
+import { useTheme } from "./context/ThemeContext";
 
 function App() {
-  const { walletAddress, setModalOpen } = useWallet();
+  const { walletAddress, setModalOpen, disconnectWallet } = useWallet();
+  const { isDark } = useTheme();
   const [balance, setBalance] = useState("0");
   const [nfts, setNfts] = useState([]);
   const [accountDetails, setAccountDetails] = useState(null);
@@ -32,12 +34,6 @@ function App() {
   );
 
   function showError(message, field) {
-    // if (field) {
-    //   formErrors.value = { ...formErrors.value, [field]: message };
-    // }
-    // else {
-    //   toast.error(message);
-    // }
     alert(message);
   }
 
@@ -62,7 +58,6 @@ function App() {
             "accountError"
           );
 
-
           console.error("Account error:", e);
           setBalance("N/A");
         }
@@ -84,212 +79,248 @@ function App() {
   return (
     <>
       <Background />
-      <div className={`app-container relative z-10 ${walletAddress ? "loggedin" : "loggedout"}`}>
-        <WalletModal />
-        {walletAddress && <NavBar />}
+      <style>{`
+        .main-content {
+          flex: 1;
+          width: 100%;
+          min-height: 100vh;
+          transition: margin-left 0.3s ease;
+        }
+        @media (min-width: 768px) {
+          .main-content.with-sidebar {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+          }
+        }
+      `}</style>
+      <div style={{ position: "relative", zIndex: 1, display: "flex", width: "100%", minHeight: "100vh" }}>
+        <div
+          className={`app-container ${walletAddress ? "loggedin" : "loggedout"}`}
+          style={{
+            display: "flex",
+            width: "100%",
+            color: isDark ? "#fff" : "#1a1a2e",
+            minHeight: "100vh"
+          }}
+        >
+          <WalletModal />
 
-        <Routes>
-          {/* ✅ Mobile Responsive Login Page */}
-          <Route path="/login" element={
-            !walletAddress ? (
-              <div style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "16px",
-              }}>
+        {walletAddress && (
+          <Sidebar
+            walletAddress={walletAddress}
+            onDisconnect={() => disconnectWallet()}
+          />
+        )}
+
+        <main className={`main-content ${walletAddress ? 'with-sidebar' : ''}`}>
+          <Routes>
+            {/* ✅ Mobile Responsive Login Page */}
+            <Route path="/login" element={
+              !walletAddress ? (
                 <div style={{
-                  background: "rgba(255,255,255,0.05)",
-                  backdropFilter: "blur(20px)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "24px",
-                  padding: "clamp(24px, 6vw, 48px)",
-                  width: "100%",
-                  maxWidth: "480px",
-                  textAlign: "center",
-                  boxShadow: "0 25px 50px rgba(88,28,135,0.4)",
+                  minHeight: "100vh",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "16px",
                 }}>
                   <div style={{
-                    width: "64px",
-                    height: "64px",
-                    background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                    borderRadius: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto 20px",
-                    fontSize: "28px",
+                    background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "24px",
+                    padding: "clamp(24px, 6vw, 48px)",
+                    width: "100%",
+                    maxWidth: "480px",
+                    textAlign: "center",
+                    boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.1)",
                   }}>
-                    🌟
-                  </div>
-
-                  <h1 style={{
-                    fontSize: "clamp(1.4rem, 5vw, 2rem)",
-                    fontWeight: 700,
-                    color: "#fff",
-                    marginBottom: "10px",
-                    lineHeight: 1.2,
-                  }}>Stellar NFT dApp</h1>
-
-                  <p style={{
-                    fontSize: "clamp(0.85rem, 3vw, 1rem)",
-                    color: "rgba(255,255,255,0.6)",
-                    marginBottom: "32px",
-                    lineHeight: 1.5,
-                  }}>Connect your wallet to get started</p>
-
-                  <button
-                    style={{
-                      width: "100%",
+                    <div style={{
+                      width: "64px",
+                      height: "64px",
                       background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                      color: "#fff",
-                      fontWeight: 600,
-                      padding: "clamp(12px, 3vw, 16px)",
-                      borderRadius: "14px",
-                      border: "none",
-                      cursor: "pointer",
-                      fontSize: "clamp(0.9rem, 3vw, 1rem)",
-                      boxShadow: "0 8px 24px rgba(124,58,237,0.4)",
-                      transition: "all 0.3s ease",
-                    }}
-                    onClick={() => setModalOpen(true)}
-                    onMouseEnter={e => e.target.style.transform = "scale(1.02)"}
-                    onMouseLeave={e => e.target.style.transform = "scale(1)"}
-                  >
-                    Connect Wallet
-                  </button>
+                      borderRadius: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 20px",
+                      fontSize: "28px",
+                    }}>
+                      🌟
+                    </div>
 
-                  <p style={{
-                    marginTop: "20px",
-                    fontSize: "0.75rem",
-                    color: "rgba(255,255,255,0.3)",
-                  }}>
-                    Supports Freighter • Albedo • xBull
-                  </p>
-                </div>
-              </div>
-            ) : <Navigate to="/" replace />
-          } />
+                    <h1 style={{
+                      fontSize: "clamp(1.4rem, 5vw, 2rem)",
+                      fontWeight: 700,
+                      color: isDark ? "#fff" : "#1a1a2e",
+                      marginBottom: "10px",
+                      lineHeight: 1.2,
+                    }}>Stellar NFT dApp</h1>
 
-          <Route
-            path="/"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <PaymentPage
-                    walletAddress={walletAddress}
-                    balance={balance}
-                    setBalance={setBalance}
-                    server={server}
-                  />
+                    <p style={{
+                      fontSize: "clamp(0.85rem, 3vw, 1rem)",
+                      color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)",
+                      marginBottom: "32px",
+                      lineHeight: 1.5,
+                    }}>Connect your wallet to get started</p>
+
+                    <button
+                      style={{
+                        width: "100%",
+                        background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                        color: "#fff",
+                        fontWeight: 600,
+                        padding: "clamp(12px, 3vw, 16px)",
+                        borderRadius: "14px",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "clamp(0.9rem, 3vw, 1rem)",
+                        boxShadow: "0 8px 24px rgba(124,58,237,0.4)",
+                        transition: "all 0.3s ease",
+                      }}
+                      onClick={() => setModalOpen(true)}
+                      onMouseEnter={e => e.target.style.transform = "scale(1.02)"}
+                      onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                    >
+                      Connect Wallet
+                    </button>
+
+                    <p style={{
+                      marginTop: "20px",
+                      fontSize: "0.75rem",
+                      color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)",
+                    }}>
+                      Supports Freighter • Albedo • xBull
+                    </p>
+                  </div>
                 </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/mint"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <MintPage
-                    walletAddress={walletAddress}
-                    server={server}
-                    setBalance={setBalance}
-                    setNfts={setNfts}
-                    nfts={nfts}
-                  />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <ProfilePage account={accountDetails} nfts={nfts} />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/gallery"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <GalleryPage nfts={nfts} />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/marketplace"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <MarketplacePage walletAddress={walletAddress} nfts={nfts} server={server} />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/activity"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <ActivityPage walletAddress={walletAddress} />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <DashboardPage
-                    walletAddress={walletAddress}
-                    balance={balance}
-                    nfts={nfts}
-                    jobs={[]}
-                  />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/escrow"
-            element={
-              walletAddress ? (
-                <div className="pages-container">
-                  <EscrowPage
-                    walletAddress={walletAddress}
-                    server={server}
-                    onJobPosted={() => setJobsPosted(jobsPosted + 1)}
-                    onJobAccepted={(jobId) => {
-                      console.log("Job accepted:", jobId);
-                    }}
-                    onWorkSubmitted={() => console.log("Work Submitted")}
-                    onPaymentReleased={async (jobId) => {
-                      // Refresh balance
-                      try {
-                        const account = await server.loadAccount(walletAddress);
-                        const xlm = account.balances.find(b => b.asset_type === "native");
-                        setBalance(parseFloat(xlm.balance).toFixed(2));
-                      } catch (e) { console.error("Balance refresh error:", e); }
-                      // Refresh NFTs
-                      try {
-                        const userNfts = await fetchNFTs(walletAddress);
-                        setNfts(userNfts);
-                      } catch (e) { console.error("NFT refresh error:", e); }
-                    }}
-                  />
-                </div>
-              ) : <Navigate to="/login" replace />
-            }
-          />
-        </Routes>
+              ) : <Navigate to="/" replace />
+            } />
+
+            <Route
+              path="/"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <DashboardPage
+                      walletAddress={walletAddress}
+                      balance={balance}
+                      nfts={nfts}
+                      jobs={[]}
+                    />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/payment"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <PaymentPage
+                      walletAddress={walletAddress}
+                      balance={balance}
+                      setBalance={setBalance}
+                      server={server}
+                    />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/mint"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <MintPage
+                      walletAddress={walletAddress}
+                      server={server}
+                      setBalance={setBalance}
+                      setNfts={setNfts}
+                      nfts={nfts}
+                    />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <ProfilePage account={accountDetails} nfts={nfts} />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/gallery"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <GalleryPage nfts={nfts} />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/marketplace"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <MarketplacePage walletAddress={walletAddress} nfts={nfts} server={server} />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/activity"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <ActivityPage walletAddress={walletAddress} />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/escrow"
+              element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <EscrowPage
+                      walletAddress={walletAddress}
+                      server={server}
+                      onJobPosted={() => setJobsPosted(jobsPosted + 1)}
+                      onJobAccepted={(jobId) => {
+                        console.log("Job accepted:", jobId);
+                      }}
+                      onWorkSubmitted={() => console.log("Work Submitted")}
+                      onPaymentReleased={async (jobId) => {
+                        // Refresh balance
+                        try {
+                          const account = await server.loadAccount(walletAddress);
+                          const xlm = account.balances.find(b => b.asset_type === "native");
+                          setBalance(parseFloat(xlm.balance).toFixed(2));
+                        } catch (e) { console.error("Balance refresh error:", e); }
+                        // Refresh NFTs
+                        try {
+                          const userNfts = await fetchNFTs(walletAddress);
+                          setNfts(userNfts);
+                        } catch (e) { console.error("NFT refresh error:", e); }
+                      }}
+                    />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={<Navigate to="/" replace />}
+            />
+          </Routes>
+        </main>
+      </div>
       </div>
     </>
   );

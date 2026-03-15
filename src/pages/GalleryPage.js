@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getImageById } from "../utils/imageMap";
 import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
+import { useTheme } from "../context/ThemeContext";
 import "./GalleryPage.css";
 
 export default function GalleryPage({ nfts }) {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
 
   // ✅ Fix 1: Duplicate remove करा
   const uniqueNfts = nfts ? nfts.filter((nft, index, self) =>
@@ -27,8 +29,8 @@ export default function GalleryPage({ nfts }) {
         animate="visible"
       >
         <motion.div className="gallery-header" variants={itemVariants}>
-          <h1 className="heading-xl">My NFT Collection</h1>
-          <p className="subtext">Your minted digital assets on Stellar.</p>
+          <h1 className="heading-xl" style={{ color: isDark ? "#fff" : "#1a1a2e" }}>My NFT Collection</h1>
+          <p className="subtext" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)" }}>Your minted digital assets on Stellar.</p>
         </motion.div>
 
         {/* NFT Count Badge */}
@@ -52,22 +54,28 @@ export default function GalleryPage({ nfts }) {
           <motion.div
             className="card flex flex-col items-center justify-center text-center"
             variants={itemVariants}
+            style={{
+              background: isDark ? "rgba(255,255,255,0.04)" : "#fff",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.1)",
+              boxShadow: isDark ? "none" : "0 2px 12px rgba(0,0,0,0.06)",
+              padding: "40px"
+            }}
           >
             <div style={{
               width: "80px", height: "80px", borderRadius: "50%",
-              background: "rgba(255,255,255,0.05)", display: "flex",
+              background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", display: "flex",
               alignItems: "center", justifyContent: "center", marginBottom: "16px"
             }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={isDark ? "#94a3b8" : "#475569"} strokeWidth="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
             </div>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: "700", color: "#e2e8f0", margin: "0 0 8px 0" }}>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: "700", color: isDark ? "#fff" : "#1a1a2e", margin: "0 0 8px 0" }}>
               No NFTs Minted Yet
             </h3>
-            <p style={{ color: "#94a3b8", margin: "0 0 24px 0" }}>
+            <p style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", margin: "0 0 24px 0" }}>
               Start your collection by minting your first digital asset.
             </p>
             <button onClick={() => navigate('/mint')} className="btn-primary mt-6">
@@ -87,7 +95,7 @@ export default function GalleryPage({ nfts }) {
                 imageId.startsWith("https://") || imageId.startsWith("ipfs://")
                   ? imageId
                   : getImageById(imageId.toUpperCase()) ||
-                    "https://via.placeholder.com/200?text=No+Image";
+                  "https://via.placeholder.com/200?text=No+Image";
 
               // Badge साठी short label
               const imageKey = imageId.startsWith("https://")
@@ -114,8 +122,15 @@ export default function GalleryPage({ nfts }) {
                     className="relative z-10 w-[380px] card"
                     whileHover={{ y: -5 }}
                     transition={{ type: "spring", stiffness: 300 }}
+                    style={{
+                      background: isDark ? "rgba(30, 41, 59, 0.4)" : "rgba(255, 255, 255, 0.9)",
+                      border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(0, 0, 0, 0.08)",
+                      boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.08)",
+                      borderRadius: "20px",
+                      overflow: "hidden"
+                    }}
                   >
-                    <div className="nft-image-container">
+                    <div className="nft-image-container" style={{ background: isDark ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)" }}>
                       <img
                         src={imageSrc}
                         alt={nft.name || "NFT"}
@@ -128,12 +143,24 @@ export default function GalleryPage({ nfts }) {
                       />
                     </div>
 
-                    <div className="nft-info">
-                      <h3 className="nft-name" title={nft.name || "Unnamed NFT"}>
+                    <div className="nft-info" style={{
+                      padding: "16px",
+                      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.05)" : "1px solid rgba(0, 0, 0, 0.05)",
+                      background: isDark ? "rgba(15, 23, 42, 0.3)" : "rgba(255, 255, 255, 0.5)"
+                    }}>
+                      <h3 className="nft-name" title={nft.name || "Unnamed NFT"} style={{
+                        fontSize: "1.1rem", fontWeight: 700, margin: "0 0 6px 0",
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                        color: isDark ? "#f8fafc" : "#1a1a2e"
+                      }}>
                         {nft.name || "Unnamed NFT"}
                       </h3>
-                      <div className="nft-meta">
-                        <span className="nft-badge">#{imageKey}</span>
+                      <div className="nft-meta" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem", color: isDark ? "#94a3b8" : "rgba(0,0,0,0.6)" }}>
+                        <span className="nft-badge" style={{
+                          background: isDark ? "rgba(139, 92, 246, 0.1)" : "rgba(139, 92, 246, 0.05)",
+                          color: isDark ? "#a78bfa" : "#7c3aed", padding: "2px 8px", borderRadius: "6px",
+                          fontWeight: 600, border: isDark ? "1px solid rgba(139, 92, 246, 0.2)" : "1px solid rgba(139, 92, 246, 0.3)"
+                        }}>#{imageKey}</span>
                         <span>Stellar Network</span>
                       </div>
 

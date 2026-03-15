@@ -4,6 +4,7 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { useWallet } from "../WalletContext";
 import { signTransaction } from "../walletService";
 import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
+import { useTheme } from "../context/ThemeContext";
 import { shortenAddress } from "../utils";
 import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
 
@@ -11,6 +12,7 @@ const HORIZON_URL = "https://horizon-testnet.stellar.org";
 
 export default function MarketplacePage({ walletAddress, nfts, server }) {
   const { walletType } = useWallet();
+  const { isDark } = useTheme();
 
   const [listings, setListings] = useState([]);
 
@@ -150,15 +152,16 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
     <div style={{ minHeight: "100vh", padding: "2rem 1rem" }}>
       <style>{`
         .market-card {
-          background: rgba(15, 15, 30, 0.7);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: ${isDark ? "rgba(15, 15, 30, 0.7)" : "rgba(255, 255, 255, 0.9)"};
+          border: 1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"};
           border-radius: 20px; overflow: hidden;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           backdrop-filter: blur(20px);
+          box-shadow: ${isDark ? "none" : "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)"};
         }
         .market-card:hover {
           border-color: rgba(139, 92, 246, 0.4);
-          box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+          box-shadow: ${isDark ? "0 20px 40px rgba(139, 92, 246, 0.15)" : "0 20px 40px rgba(139, 92, 246, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.1)"};
           transform: translateY(-6px);
         }
         .buy-btn {
@@ -224,14 +227,14 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
         }
         .success-overlay {
           position: fixed; inset: 0; z-index: 100;
-          background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+          background: ${isDark ? "rgba(0,0,0,0.85)" : "rgba(255,255,255,0.8)"}; backdrop-filter: blur(10px);
           display: flex; align-items: center; justify-content: center;
         }
         .success-card {
-          background: linear-gradient(135deg, rgba(15,15,30,0.95), rgba(30,20,50,0.95));
-          border: 1px solid rgba(139,92,246,0.4); border-radius: 24px;
+          background: ${isDark ? "linear-gradient(135deg, rgba(15,15,30,0.95), rgba(30,20,50,0.95))" : "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95))"};
+          border: 1px solid ${isDark ? "rgba(139,92,246,0.4)" : "rgba(139,92,246,0.2)"}; border-radius: 24px;
           padding: 40px; max-width: 420px; width: 90%;
-          text-align: center; box-shadow: 0 30px 60px rgba(139,92,246,0.3);
+          text-align: center; box-shadow: ${isDark ? "0 30px 60px rgba(139,92,246,0.3)" : "0 30px 60px rgba(139,92,246,0.15), 0 10px 15px -3px rgba(0,0,0,0.1)"};
         }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
@@ -240,13 +243,13 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
 
         {/* Header */}
         <motion.div className="text-center mb-10" variants={itemVariants}>
-          <h1 style={{ fontSize: "2.8rem", fontWeight: 800, color: "white", marginBottom: "8px" }}>
+          <h1 style={{ fontSize: "2.8rem", fontWeight: 800, color: isDark ? "white" : "#1a1a2e", marginBottom: "8px" }}>
             NFT{" "}
             <span style={{ background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Marketplace
             </span>
           </h1>
-          <p style={{ color: "#94a3b8", fontSize: "1.1rem" }}>
+          <p style={{ color: isDark ? "#94a3b8" : "#64748b", fontSize: "1.1rem" }}>
             Buy and sell NFTs on the Stellar Network
           </p>
 
@@ -282,14 +285,14 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             style={{
-              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px", padding: "8px 16px", color: "#e2e8f0",
+              background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+              borderRadius: "10px", padding: "8px 16px", color: isDark ? "#e2e8f0" : "#1e293b",
               fontSize: "0.85rem", cursor: "pointer",
             }}
           >
-            <option value="newest" style={{ background: "#1e1e2d" }}>Newest First</option>
-            <option value="price-low" style={{ background: "#1e1e2d" }}>Price: Low → High</option>
-            <option value="price-high" style={{ background: "#1e1e2d" }}>Price: High → Low</option>
+            <option value="newest" style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Newest First</option>
+            <option value="price-low" style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Price: Low → High</option>
+            <option value="price-high" style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Price: High → Low</option>
           </select>
         </motion.div>
 
@@ -315,14 +318,14 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
         {filteredListings.length === 0 && (
           <motion.div variants={itemVariants} style={{
             textAlign: "center", padding: "80px 20px",
-            background: "rgba(15,15,30,0.5)", border: "1px solid rgba(255,255,255,0.06)",
+            background: isDark ? "rgba(15,15,30,0.5)" : "rgba(255,255,255,0.8)", border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.06)",
             borderRadius: "20px",
           }}>
             <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🏪</div>
-            <h3 style={{ color: "#94a3b8", fontSize: "1.3rem", fontWeight: 700, marginBottom: "8px" }}>
+            <h3 style={{ color: isDark ? "#94a3b8" : "#475569", fontSize: "1.3rem", fontWeight: 700, marginBottom: "8px" }}>
               {filter === "sale" ? "No NFTs Listed for Sale" : "No NFTs Found"}
             </h3>
-            <p style={{ color: "#475569", fontSize: "0.9rem" }}>
+            <p style={{ color: isDark ? "#475569" : "#64748b", fontSize: "0.9rem" }}>
               {listings.length === 0
                 ? "Mint some NFTs first, then list them here for sale!"
                 : "Click 'List for Sale' on any NFT to sell it."}
@@ -338,7 +341,7 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
           {filteredListings.map((nft) => (
             <motion.div key={nft.id} className="market-card" variants={itemVariants}>
               {/* Image */}
-              <div style={{ position: "relative", aspectRatio: "1", overflow: "hidden", background: "#0a0a15" }}>
+              <div style={{ position: "relative", aspectRatio: "1", overflow: "hidden", background: isDark ? "#0a0a15" : "#f1f5f9" }}>
                 <img
                   src={nft.image}
                   alt={nft.name}
@@ -352,12 +355,12 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
               </div>
 
               {/* Info */}
-              <div style={{ padding: "16px" }}>
-                <h3 style={{ color: "white", fontWeight: 700, fontSize: "1rem", marginBottom: "10px" }}>{nft.name}</h3>
+              <div style={{ padding: "16px", borderTop: isDark ? "1px solid transparent" : "1px solid rgba(0,0,0,0.05)" }}>
+                <h3 style={{ color: isDark ? "white" : "#1a1a2e", fontWeight: 700, fontSize: "1rem", marginBottom: "10px" }}>{nft.name}</h3>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
                   <span className="price-tag">⭐ {nft.price} XLM</span>
-                  <span style={{ color: "#64748b", fontSize: "0.75rem" }}>{nft.owner}</span>
+                  <span style={{ color: isDark ? "#64748b" : "#94a3b8", fontSize: "0.75rem" }}>{nft.owner}</span>
                 </div>
 
                 {/* Buttons */}
@@ -412,8 +415,8 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
           <motion.div className="success-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="success-card" initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
               <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🎉</div>
-              <h2 style={{ color: "white", fontSize: "1.5rem", fontWeight: 800, marginBottom: "8px" }}>Purchase Successful!</h2>
-              <p style={{ color: "#94a3b8", marginBottom: "20px" }}>
+              <h2 style={{ color: isDark ? "white" : "#1a1a2e", fontSize: "1.5rem", fontWeight: 800, marginBottom: "8px" }}>Purchase Successful!</h2>
+              <p style={{ color: isDark ? "#94a3b8" : "#475569", marginBottom: "20px" }}>
                 You bought <strong style={{ color: "#a78bfa" }}>{successTx.nftName}</strong> for{" "}
                 <strong style={{ color: "#a78bfa" }}>{successTx.price} XLM</strong>
               </p>
@@ -458,14 +461,14 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
           <motion.div className="success-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="success-card" initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
               <div style={{ fontSize: "2rem", marginBottom: "12px" }}>🏷️</div>
-              <h2 style={{ color: "white", fontSize: "1.4rem", fontWeight: 800, marginBottom: "8px" }}>
+              <h2 style={{ color: isDark ? "white" : "#1a1a2e", fontSize: "1.4rem", fontWeight: 800, marginBottom: "8px" }}>
                 {selectedNft.listed ? "Edit Price" : "List for Sale"}
               </h2>
-              <p style={{ color: "#94a3b8", marginBottom: "20px" }}>
+              <p style={{ color: isDark ? "#94a3b8" : "#475569", marginBottom: "20px" }}>
                 <strong style={{ color: "#a78bfa" }}>{selectedNft.name}</strong>
               </p>
               <div style={{ marginBottom: "20px", textAlign: "left" }}>
-                <label style={{ color: "#94a3b8", fontSize: "0.85rem", display: "block", marginBottom: "8px" }}>
+                <label style={{ color: isDark ? "#94a3b8" : "#64748b", fontSize: "0.85rem", display: "block", marginBottom: "8px" }}>
                   Price in XLM
                 </label>
                 <input
@@ -477,8 +480,8 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
                   step="0.1"
                   style={{
                     width: "100%", padding: "12px 16px", borderRadius: "12px",
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                    color: "white", fontSize: "1rem", outline: "none",
+                    background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                    color: isDark ? "white" : "#1a1a2e", fontSize: "1rem", outline: "none",
                     boxSizing: "border-box",
                   }}
                 />
@@ -488,8 +491,8 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
                   onClick={() => { setShowListModal(false); setSelectedNft(null); }}
                   style={{
                     flex: 1, padding: "12px", borderRadius: "12px",
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                    color: "#94a3b8", cursor: "pointer", fontWeight: 600,
+                    background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                    color: isDark ? "#94a3b8" : "#475569", cursor: "pointer", fontWeight: 600,
                   }}
                 >
                   Cancel

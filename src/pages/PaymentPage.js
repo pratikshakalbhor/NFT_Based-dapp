@@ -7,10 +7,13 @@ import { containerVariants, itemVariants } from "../components/ProfilePageAnimat
 import { XLMIcon } from "../components/ProfilePageIcons";
 import "../App.css";
 import "./PaymentPage.css";
+import "./PaymentPage.css";
 import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
+import { useTheme } from "../context/ThemeContext";
 
 export default function PaymentPage({ walletAddress, balance, setBalance, server }) {
   const { walletType } = useWallet();
+  const { isDark } = useTheme();
   const [receiver, setReceiver] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("");
@@ -57,8 +60,8 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
       // ✅ Step 3: Amount - 7 decimal places, string format
       const fixedAmount = parseFloat(amount).toFixed(7);
 
-      
-      const FEE = "100000"; 
+
+      const FEE = "100000";
 
       setStatus("Building transaction...");
       const transaction = new StellarSdk.TransactionBuilder(account, {
@@ -183,36 +186,55 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
         animate="visible"
       >
         <motion.div className="payment-header" variants={itemVariants}>
-          <h1 className="payment-title">Send Payment</h1>
-          <p className="payment-subtitle">Secure & Fast Global Transactions</p>
+          <h1 className="payment-title" style={{ color: isDark ? "#fff" : "#1a1a2e" }}>Send Payment</h1>
+          <p className="payment-subtitle" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)" }}>Secure & Fast Global Transactions</p>
         </motion.div>
 
-        <motion.div className="card payment-card" variants={itemVariants}>
+        <motion.div
+          className="card payment-card"
+          variants={itemVariants}
+          style={{
+            background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
+            border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+            boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.08)"
+          }}
+        >
           {/* Balance Display */}
-          <div className="balance-card">
-            <span className="balance-label">Available Balance</span>
+          <div
+            className="balance-card"
+            style={{
+              background: isDark ? "rgba(255,255,255,0.05)" : "rgba(99,102,241,0.06)",
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(99,102,241,0.15)"
+            }}
+          >
+            <span className="balance-label" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)" }}>Available Balance</span>
             <div className="balance-value-container">
-              <XLMIcon className="xlm-icon-large" />
-              <span className="balance-amount-large">{balance}</span>
-              <span className="balance-currency">XLM</span>
+              <XLMIcon className="xlm-icon-large" style={{ color: isDark ? "#fff" : "#1a1a2e" }} />
+              <span className="balance-amount-large" style={{ color: isDark ? "#fff" : "#1a1a2e" }}>{balance}</span>
+              <span className="balance-currency" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)" }}>XLM</span>
             </div>
           </div>
 
           {/* Payment Form */}
           <div className="payment-form">
             <div className="input-group">
-              <label className="input-label">Receiver Address</label>
+              <label className="input-label" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)" }}>Receiver Address</label>
               <input
                 className="form-input"
                 placeholder="G..."
                 value={receiver}
                 onChange={(e) => setReceiver(e.target.value)}
                 disabled={loading}
+                style={{
+                  background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                  border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)",
+                  color: isDark ? "#fff" : "#1a1a2e"
+                }}
               />
             </div>
 
             <div className="input-group">
-              <label className="input-label">Amount (XLM)</label>
+              <label className="input-label" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)" }}>Amount (XLM)</label>
               <input
                 className="form-input"
                 placeholder="0.00"
@@ -222,6 +244,11 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={loading}
+                style={{
+                  background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                  border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)",
+                  color: isDark ? "#fff" : "#1a1a2e"
+                }}
               />
             </div>
 
@@ -250,7 +277,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
             </motion.div>
           )}
 
-         
+
           {txHash && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}

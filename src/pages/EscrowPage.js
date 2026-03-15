@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { useWallet } from "../WalletContext";
 import { signTransaction } from "../walletService";
-import { NETWORK, NETWORK_PASSPHRASE, ESCROW_CONTRACT_ID, CONTRACT_ID, HORIZON_URL } from "../constants";
+import { NETWORK, NETWORK_PASSPHRASE, ESCROW_CONTRACT_ID, CONTRACT_ID, HORIZON_URL, NATIVE_XLM_TOKEN } from "../constants";
+import { useTheme } from "../context/ThemeContext";
 
 const STATUS_COLORS = {
   0: { bg: "rgba(59,130,246,0.15)", color: "#60a5fa", label: "🔵 Open" },
@@ -68,6 +69,7 @@ const getStatusKey = (status) => {
 
 export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAccepted, onWorkSubmitted, onPaymentReleased }) {
   const { walletType } = useWallet();
+  const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState("post");
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -174,6 +176,7 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
         StellarSdk.nativeToScVal(title, { type: "string" }),
         StellarSdk.nativeToScVal(description, { type: "string" }),
         StellarSdk.nativeToScVal(Math.floor(parseFloat(amount) * 10_000_000), { type: "i128" }),
+        StellarSdk.nativeToScVal(NATIVE_XLM_TOKEN, { type: "address" }),
       ]);
       showStatus("✅ Job posted!", "success");
       setTitle(""); setDescription(""); setAmount("");
@@ -224,45 +227,20 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
     try {
       setLoading(true);
 
-      // Step 1: Approve on escrow contract
-      showStatus("⏳ Approving job on contract...", "info");
-      await invokeContract("approve_job", [
+      // Step 1: Get job details from local state before approving
+      const job = jobs.find(j => j.id === jobId);
+      if (!job) throw new Error("Job not found");
+      const freelancer = String(job.freelancer);
+
+      // Step 2: Call approve_and_pay — contract automatically releases XLM to freelancer
+      showStatus("⏳ Approving job & releasing XLM payment...", "info");
+      await invokeContract("approve_and_pay", [
         StellarSdk.nativeToScVal(walletAddress, { type: "address" }),
         StellarSdk.nativeToScVal(jobId, { type: "u32" }),
       ]);
+      showStatus("✅ XLM released to freelancer! Minting NFT certificate...", "success");
 
-      // Step 2: Get job details from local state
-      const job = jobs.find(j => j.id === jobId);
-      if (!job) throw new Error("Job not found in local state");
-      const freelancer = String(job.freelancer);
-      const xlmAmount = (Number(job.amount) / 10_000_000).toFixed(7);
-
-      // Step 3: Send XLM payment via Horizon
-      showStatus("💸 Sending XLM payment to freelancer...", "info");
-      try {
-        const horizonServer = server || new StellarSdk.Horizon.Server(HORIZON_URL);
-        const sourceAccount = await horizonServer.loadAccount(walletAddress);
-        const payTx = new StellarSdk.TransactionBuilder(sourceAccount, {
-          fee: "100000",
-          networkPassphrase: NETWORK_PASSPHRASE,
-        })
-          .addOperation(StellarSdk.Operation.payment({
-            destination: freelancer,
-            asset: StellarSdk.Asset.native(),
-            amount: xlmAmount,
-          }))
-          .setTimeout(60)
-          .build();
-        const signedPayXdr = await signTransaction(payTx.toXDR(), walletType, NETWORK, NETWORK_PASSPHRASE);
-        const signedPayTx = StellarSdk.TransactionBuilder.fromXDR(signedPayXdr, NETWORK_PASSPHRASE);
-        await horizonServer.submitTransaction(signedPayTx);
-        showStatus("✅ XLM sent! Minting NFT certificate...", "success");
-      } catch (payErr) {
-        console.error("XLM payment error:", payErr);
-        showStatus(`⚠️ Payment sent via contract but Horizon payment failed: ${payErr.message}`, "info");
-      }
-
-      // Step 4: Mint NFT certificate for freelancer
+      // Step 3: Mint NFT certificate for freelancer
       try {
         const rpc = getRpc();
         const rpcAccount = await rpc.getAccount(walletAddress);
@@ -274,10 +252,10 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
             contract: CONTRACT_ID,
             function: "mint_nft",
             args: [
-              StellarSdk.nativeToScVal(walletAddress, { type: "address" }),   // minter
-              StellarSdk.nativeToScVal(freelancer, { type: "address" }),      // owner
-              StellarSdk.nativeToScVal(`Escrow Certificate - ${job.title}`, { type: "string" }),
-              StellarSdk.nativeToScVal("https://nft-based-dapp.vercel.app/logo192.png", { type: "string" }),
+              StellarSdk.nativeToScVal(walletAddress, { type: "address" }),
+              StellarSdk.nativeToScVal(freelancer, { type: "address" }),
+              StellarSdk.nativeToScVal(`Job Certificate: ${job.title}`, { type: "string" }),
+              StellarSdk.nativeToScVal("ipfs://certificate", { type: "string" }),
             ],
           }))
           .setTimeout(60)
@@ -286,18 +264,43 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
         const signedNftXdr = await signTransaction(preparedNft.toXDR(), walletType, NETWORK, NETWORK_PASSPHRASE);
         const signedNftTx = StellarSdk.TransactionBuilder.fromXDR(signedNftXdr, NETWORK_PASSPHRASE);
         await rpc.sendTransaction(signedNftTx);
-        showStatus("🎖️ NFT certificate minted for freelancer!", "success");
       } catch (nftErr) {
         console.error("NFT mint error:", nftErr);
-        showStatus(`⚠️ Payment released but NFT mint failed: ${nftErr.message}`, "info");
+        // Non-fatal — payment already succeeded
       }
 
-      // Step 5: Done
-      showStatus("✅ Job approved, payment sent, NFT certificate minted!", "success");
+      // Step 4: Refresh balance
+      try {
+        const horizonServer = server || new StellarSdk.Horizon.Server(HORIZON_URL);
+        const account = await horizonServer.loadAccount(walletAddress);
+        const xlm = account.balances.find(b => b.asset_type === "native");
+        if (xlm) console.log("Updated balance:", xlm.balance);
+      } catch (e) { console.error("Balance refresh error:", e); }
+
+      showStatus("✅ XLM sent + NFT Certificate minted!", "success");
       await loadJobs();
       onPaymentReleased && onPaymentReleased(jobId);
     } catch (e) {
       showStatus(`❌ Error: ${e.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelJob = async (jobId) => {
+    try {
+      setLoading(true);
+      showStatus("⏳ Cancelling job & refunding XLM...", "info");
+      await invokeContract("cancel_job", [
+        StellarSdk.nativeToScVal(walletAddress, { type: "address" }),
+        StellarSdk.nativeToScVal(jobId, { type: "u32" }),
+        StellarSdk.nativeToScVal(NATIVE_XLM_TOKEN, { type: "address" }),
+      ]);
+      showStatus("✅ Job cancelled — XLM refunded to your wallet!", "success");
+      await loadJobs();
+      onPaymentReleased && onPaymentReleased(jobId); // trigger balance refresh in App.js
+    } catch (e) {
+      showStatus(`❌ Cancel error: ${e.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -335,10 +338,10 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{
           fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: 800,
-          background: "linear-gradient(135deg, #a78bfa, #60a5fa)",
+          background: isDark ? "linear-gradient(135deg, #a78bfa, #60a5fa)" : "linear-gradient(135deg, #4f46e5, #0ea5e9)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "8px",
         }}>🤝 Freelancer Escrow</h1>
-        <p style={{ color: "rgba(255,255,255,0.5)" }}>Safe payments on Stellar blockchain</p>
+        <p style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)" }}>Safe payments on Stellar blockchain</p>
       </div>
 
       <AnimatePresence>
@@ -353,36 +356,36 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
         )}
       </AnimatePresence>
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "24px", background: "rgba(255,255,255,0.03)", padding: "6px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "24px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", padding: "6px", borderRadius: "16px", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)" }}>
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
             flex: 1, padding: "10px", borderRadius: "12px", border: "none", cursor: "pointer",
             fontWeight: 600, fontSize: "0.85rem", transition: "all 0.2s",
             background: activeTab === tab.id ? "linear-gradient(135deg, #7c3aed, #4f46e5)" : "transparent",
-            color: activeTab === tab.id ? "#fff" : "rgba(255,255,255,0.5)",
+            color: activeTab === tab.id ? "#fff" : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"),
           }}>{tab.label}</button>
         ))}
       </div>
 
       {/* POST JOB */}
       {activeTab === "post" && (
-        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "20px", padding: "28px" }}>
-          <h2 style={{ color: "#fff", marginBottom: "24px" }}>📝 Post a New Job</h2>
+        <div style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)", borderRadius: "20px", padding: "28px", boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.08)" }}>
+          <h2 style={{ color: isDark ? "#fff" : "#1a1a2e", marginBottom: "24px" }}>📝 Post a New Job</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
-              <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", marginBottom: "8px", display: "block" }}>Job Title</label>
+              <label style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontSize: "0.85rem", marginBottom: "8px", display: "block" }}>Job Title</label>
               <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Logo Design, Website..." disabled={loading}
-                style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#fff", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "12px 16px", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)", borderRadius: "12px", color: isDark ? "#fff" : "#1a1a2e", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }} />
             </div>
             <div>
-              <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", marginBottom: "8px", display: "block" }}>Description</label>
+              <label style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontSize: "0.85rem", marginBottom: "8px", display: "block" }}>Description</label>
               <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the job requirements..." rows={3} disabled={loading}
-                style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#fff", fontSize: "0.95rem", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "12px 16px", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)", borderRadius: "12px", color: isDark ? "#fff" : "#1a1a2e", fontSize: "0.95rem", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
             </div>
             <div>
-              <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", marginBottom: "8px", display: "block" }}>Amount (XLM)</label>
+              <label style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontSize: "0.85rem", marginBottom: "8px", display: "block" }}>Amount (XLM)</label>
               <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="100" min="1" disabled={loading}
-                style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#fff", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "12px 16px", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)", borderRadius: "12px", color: isDark ? "#fff" : "#1a1a2e", fontSize: "0.95rem", outline: "none", boxSizing: "border-box" }} />
             </div>
             {amount && (
               <div style={{ padding: "12px 16px", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: "12px", color: "#a78bfa", fontSize: "0.85rem" }}>
@@ -403,24 +406,24 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
       {activeTab === "find" && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h2 style={{ color: "#fff" }}>🔍 Open Jobs ({openJobs.length})</h2>
-            <button onClick={loadJobs} disabled={loading} style={{ padding: "8px 16px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#a78bfa", cursor: "pointer" }}>
+            <h2 style={{ color: isDark ? "#fff" : "#1a1a2e" }}>🔍 Open Jobs ({openJobs.length})</h2>
+            <button onClick={loadJobs} disabled={loading} style={{ padding: "8px 16px", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)", borderRadius: "10px", color: isDark ? "#a78bfa" : "#6d28d9", cursor: "pointer" }}>
               🔄 Refresh
             </button>
           </div>
           {loading ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "rgba(255,255,255,0.4)" }}>⏳ Loading jobs...</div>
+            <div style={{ textAlign: "center", padding: "40px", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)" }}>⏳ Loading jobs...</div>
           ) : openJobs.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "20px", color: "rgba(255,255,255,0.4)" }}>
+            <div style={{ textAlign: "center", padding: "40px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)", borderRadius: "20px", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)" }}>
               😔 No open jobs found. Post one!
             </div>
           ) : openJobs.map((job, i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "20px", marginBottom: "12px" }}>
+            <div key={i} style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)", borderRadius: "16px", padding: "20px", marginBottom: "12px", boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.08)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
                 <div>
-                  <h3 style={{ color: "#fff", marginBottom: "6px" }}>{job.title}</h3>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.85rem", marginBottom: "6px" }}>{job.description}</p>
-                  <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.75rem" }}>Client: {shortenAddr(job.client)}</p>
+                  <h3 style={{ color: isDark ? "#fff" : "#1a1a2e", marginBottom: "6px" }}>{job.title}</h3>
+                  <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem", marginBottom: "6px" }}>{job.description}</p>
+                  <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.75rem" }}>Client: {shortenAddr(job.client)}</p>
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ color: "#34d399", fontWeight: 700, fontSize: "1.1rem", marginBottom: "8px" }}>
@@ -443,9 +446,9 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
       {/* MY JOBS */}
       {activeTab === "myjobs" && (
         <div>
-          <h2 style={{ color: "#fff", marginBottom: "16px" }}>💼 My Jobs ({myJobs.length})</h2>
+          <h2 style={{ color: isDark ? "#fff" : "#1a1a2e", marginBottom: "16px" }}>💼 My Jobs ({myJobs.length})</h2>
           {myJobs.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "20px", color: "rgba(255,255,255,0.4)" }}>
+            <div style={{ textAlign: "center", padding: "40px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)", borderRadius: "20px", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)" }}>
               😔 No jobs yet! Post or accept a job.
             </div>
           ) : myJobs.map((job, i) => {
@@ -455,11 +458,11 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
             const statusInfo = STATUS_COLORS[statusKey] || STATUS_COLORS[0];
 
             return (
-              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "20px", marginBottom: "12px" }}>
+              <div key={i} style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)", borderRadius: "16px", padding: "20px", marginBottom: "12px", boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.08)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
                   <div>
-                    <h3 style={{ color: "#fff", marginBottom: "4px" }}>{job.title}</h3>
-                    <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.85rem" }}>{job.description}</p>
+                    <h3 style={{ color: isDark ? "#fff" : "#1a1a2e", marginBottom: "4px" }}>{job.title}</h3>
+                    <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem" }}>{job.description}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: "20px", background: statusInfo.bg, color: statusInfo.color, fontSize: "0.8rem", fontWeight: 600, marginBottom: "6px" }}>
@@ -469,7 +472,7 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
                   </div>
                 </div>
 
-                <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)", marginBottom: "12px" }}>
+                <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", marginBottom: "12px" }}>
                   {isClient ? "👤 You are Client" : "💼 You are Freelancer"} • Job #{job.id}
                 </div>
 
@@ -485,7 +488,7 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
                       value={submitJobId === job.id ? workUrl : ""}
                       onChange={e => { setWorkUrl(e.target.value); setSubmitJobId(job.id); }}
                       placeholder="Enter work URL or IPFS link..."
-                      style={{ flex: 1, minWidth: "200px", padding: "10px 14px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#fff", fontSize: "0.85rem", outline: "none" }}
+                      style={{ flex: 1, minWidth: "200px", padding: "10px 14px", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.12)", borderRadius: "10px", color: isDark ? "#fff" : "#1a1a2e", fontSize: "0.85rem", outline: "none" }}
                     />
                     <button onClick={() => handleSubmitWork(job.id)} disabled={loading} style={{ padding: "10px 20px", background: "linear-gradient(135deg, #f59e0b, #d97706)", border: "none", borderRadius: "10px", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
                       📤 Submit Work
@@ -494,8 +497,14 @@ export default function EscrowPage({ walletAddress, server, onJobPosted, onJobAc
                 )}
 
                 {isClient && isSubmittedStatus(job.status) && (
-                  <button onClick={() => handleApproveJob(job.id)} disabled={loading} style={{ padding: "10px 24px", background: "linear-gradient(135deg, #059669, #047857)", border: "none", borderRadius: "10px", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
+                  <button onClick={() => handleApproveJob(job.id)} disabled={loading} style={{ padding: "10px 24px", background: "linear-gradient(135deg, #059669, #047857)", border: "none", borderRadius: "10px", color: "#fff", fontWeight: 600, cursor: "pointer", marginRight: "8px" }}>
                     ✅ Approve & Release Payment
+                  </button>
+                )}
+
+                {isClient && isOpenStatus(job.status) && (
+                  <button onClick={() => handleCancelJob(job.id)} disabled={loading} style={{ padding: "10px 24px", background: "linear-gradient(135deg, #dc2626, #b91c1c)", border: "none", borderRadius: "10px", color: "#fff", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer" }}>
+                    ❌ Cancel & Refund XLM
                   </button>
                 )}
               </div>

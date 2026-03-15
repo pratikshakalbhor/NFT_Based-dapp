@@ -8,16 +8,16 @@ import { WALLET_TYPES, checkConnection } from './walletService';
 import './WalletModal.css';
 
 const WalletModal = () => {
-  const { 
-    isModalOpen, 
-    setModalOpen, 
-    connectWallet, 
-    connectedWallets, 
-    walletAddress, 
-    switchWallet, 
-    disconnectWallet 
+  const {
+    isModalOpen,
+    setModalOpen,
+    connectWallet,
+    connectedWallets,
+    walletAddress,
+    switchWallet,
+    disconnectWallet
   } = useWallet();
-  
+
   const [available, setAvailable] = useState({ freighter: false, xbull: false });
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +39,12 @@ const WalletModal = () => {
       await connectWallet(type);
     } catch (error) {
       console.error('Connection failed:', error);
-      setError(error.message || 'Connection failed');
+      // Clean up error message for user declining
+      if (error?.message?.includes("User declined") || error?.message?.includes("User rejected")) {
+        setError("Connection cancelled.");
+      } else {
+        setError(error.message || 'Connection failed');
+      }
     } finally {
       setConnecting(false);
     }
@@ -95,8 +100,8 @@ const WalletModal = () => {
                 <h3 className="wallet-modal-subtitle">Connected Wallets</h3>
                 <div className="wallet-options">
                   {connectedWallets.map((wallet) => (
-                    <div 
-                      key={wallet.address} 
+                    <div
+                      key={wallet.address}
                       className="wallet-option-btn"
                       style={{ borderColor: wallet.address === walletAddress ? 'var(--success)' : '' }}
                       onClick={() => switchWallet(wallet.address)}
@@ -110,7 +115,7 @@ const WalletModal = () => {
                           <span className="wallet-description">{shortenAddress(wallet.address)}</span>
                         </div>
                       </div>
-                      <button 
+                      <button
                         className="wallet-modal-close"
                         style={{ width: 32, height: 32, marginLeft: 8 }}
                         onClick={(e) => {
@@ -130,10 +135,10 @@ const WalletModal = () => {
 
             <div className="wallet-options">
               <h3 className="wallet-modal-subtitle">{connectedWallets.length > 0 ? 'Connect Another Wallet' : 'Select Wallet'}</h3>
-              
-              <button 
-                className="wallet-option-btn" 
-                onClick={() => handleConnect(WALLET_TYPES.FREIGHTER)} 
+
+              <button
+                className="wallet-option-btn"
+                onClick={() => handleConnect(WALLET_TYPES.FREIGHTER)}
                 disabled={connecting}
               >
                 <div className="wallet-option-content">
@@ -177,10 +182,22 @@ const WalletModal = () => {
                     </svg>
                   </div>
                 )}
-                </button>
+              </button>
             </div>
 
             <div className="wallet-modal-footer">
+              <button
+                className="wallet-option-btn"
+                onClick={() => setModalOpen(false)}
+                style={{
+                  justifyContent: 'center',
+                  border: '1px solid rgba(255,100,100,0.3)',
+                  color: '#ff6b6b',
+                  marginTop: '12px'
+                }}
+              >
+                Cancel
+              </button>
               <p className="security-note">
                 Your keys are stored securely in your wallet extension.
               </p>
