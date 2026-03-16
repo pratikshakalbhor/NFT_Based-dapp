@@ -185,9 +185,14 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
         initial="hidden"
         animate="visible"
       >
-        <motion.div className="payment-header" variants={itemVariants}>
-          <h1 className="payment-title" style={{ color: isDark ? "#fff" : "#1a1a2e" }}>Send Payment</h1>
-          <p className="payment-subtitle" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)" }}>Secure & Fast Global Transactions</p>
+        <motion.div variants={itemVariants} style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
+            Send <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Payment</span>
+          </h1>
+          <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
+            Secure & Fast Global Transactions
+          </p>
+          <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
         </motion.div>
 
         <motion.div

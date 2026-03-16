@@ -155,14 +155,21 @@ function App() {
                       color: isDark ? "#fff" : "#1a1a2e",
                       marginBottom: "10px",
                       lineHeight: 1.2,
-                    }}>Stellar NFT dApp</h1>
+                    }}>FreelanceChain - DApp</h1>
 
                     <p style={{
                       fontSize: "clamp(0.85rem, 3vw, 1rem)",
                       color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)",
-                      marginBottom: "32px",
-                      lineHeight: 1.5,
-                    }}>Connect your wallet to get started</p>
+                      marginBottom: "8px",
+                      }}>Decentralized Freelancer Platform</p>
+
+                      <p style={{
+  fontSize: "0.8rem",
+  color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)",
+  marginBottom: "32px",
+}}>Connect your wallet to get started</p>
+                      
+                      
 
                     <button
                       style={{

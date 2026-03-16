@@ -18,7 +18,7 @@ const getContractType = (tx) => {
         if (xdr.includes(ESCROW_CONTRACT_ID.slice(0, 10))) return "ESCROW";
       }
     }
-  } catch {}
+  } catch { }
   return "NFT";
 };
 
@@ -268,16 +268,14 @@ export default function ActivityPage({ walletAddress }) {
       <motion.div className="max-w-2xl mx-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
         {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "2.8rem", fontWeight: 800, color: isDark ? "#fff" : "#1a1a2e", marginBottom: "6px", letterSpacing: "-0.03em" }}>
-            Activity{" "}
-            <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: isDark ? "transparent" : "#1a1a2e" }}>
-              Feed
-            </span>
+        <div style={{ textAlign: 'center', marginBottom: "32px" }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
+            Activity <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Feed</span>
           </h1>
-          <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.95rem" }}>
+          <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
             A log of your recent on-chain transactions.
           </p>
+          <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
         </div>
 
         {/* Stats — Jobs stat add केला */}
@@ -285,10 +283,10 @@ export default function ActivityPage({ walletAddress }) {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             style={{ display: "flex", gap: "12px", marginBottom: "28px", flexWrap: "wrap" }}>
             {[
-              { label: "Total Txns",  value: stats.total,    color: isDark ? "#a78bfa" : "#7c3aed" },
-              { label: "NFT Mints",   value: stats.mints,    color: isDark ? "#c4b5fd" : "#8b5cf6" },
-              { label: "Payments",    value: stats.payments, color: isDark ? "#93c5fd" : "#3b82f6" },
-              { label: "Job TXs",     value: stats.jobs,     color: isDark ? "#6ee7b7" : "#059669" },
+              { label: "Total Txns", value: stats.total, color: isDark ? "#a78bfa" : "#7c3aed" },
+              { label: "NFT Mints", value: stats.mints, color: isDark ? "#c4b5fd" : "#8b5cf6" },
+              { label: "Payments", value: stats.payments, color: isDark ? "#93c5fd" : "#3b82f6" },
+              { label: "Job TXs", value: stats.jobs, color: isDark ? "#6ee7b7" : "#059669" },
             ].map((s) => (
               <div key={s.label} className="stat-card" style={{ minWidth: "80px" }}>
                 <div style={{ fontSize: "1.6rem", fontWeight: 800, color: s.color }}>{s.value}</div>
@@ -302,10 +300,10 @@ export default function ActivityPage({ walletAddress }) {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
           style={{ display: "flex", gap: "8px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
           {[
-            { key: "all",     label: "All" },
-            { key: "mint",    label: "🎨 Mints" },
+            { key: "all", label: "All" },
+            { key: "mint", label: "🎨 Mints" },
             { key: "payment", label: "💸 Payments" },
-            { key: "jobs",    label: "💼 Jobs" },
+            { key: "jobs", label: "💼 Jobs" },
           ].map(({ key, label }) => (
             <button key={key} className={`filter-pill ${filter === key ? "active" : ""}`} onClick={() => setFilter(key)}>
               {label}

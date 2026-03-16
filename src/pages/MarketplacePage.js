@@ -44,14 +44,14 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
     );
   }, [nfts, walletAddress]);
 
-  const [buyingId, setBuyingId]       = useState(null);
-  const [successTx, setSuccessTx]     = useState(null);
+  const [buyingId, setBuyingId] = useState(null);
+  const [successTx, setSuccessTx] = useState(null);
   const [showListModal, setShowListModal] = useState(false);
-  const [listPrice, setListPrice]     = useState("");
+  const [listPrice, setListPrice] = useState("");
   const [selectedNft, setSelectedNft] = useState(null);
-  const [filter, setFilter]           = useState("all");
-  const [sortBy, setSortBy]           = useState("newest");
-  const [statusMsg, setStatusMsg]     = useState("");
+  const [filter, setFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [statusMsg, setStatusMsg] = useState("");
 
   const filteredListings = listings
     .filter((n) => {
@@ -61,7 +61,7 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === "price-low")  return parseFloat(a.price) - parseFloat(b.price);
+      if (sortBy === "price-low") return parseFloat(a.price) - parseFloat(b.price);
       if (sortBy === "price-high") return parseFloat(b.price) - parseFloat(a.price);
       return b.id - a.id;
     });
@@ -111,7 +111,7 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
   };
 
   const listedCount = listings.filter((n) => n.listed).length;
-  const certCount   = listings.filter((n) => n.isCert).length;
+  const certCount = listings.filter((n) => n.isCert).length;
 
   return (
     <div style={{ minHeight: "100vh", padding: "2rem 1rem" }}>
@@ -162,20 +162,21 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
       <motion.div className="max-w-7xl mx-auto" variants={containerVariants} initial="hidden" animate="visible">
 
         {/* Header */}
-        <motion.div className="text-center mb-10" variants={itemVariants}>
-          <h1 style={{ fontSize: "2.8rem", fontWeight: 800, color: isDark ? "white" : "#1a1a2e", marginBottom: "8px" }}>
-            NFT{" "}
-            <span style={{ background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Marketplace
-            </span>
+        <motion.div variants={itemVariants} style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
+            NFT <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Marketplace</span>
           </h1>
-          <p style={{ color: isDark ? "#94a3b8" : "#64748b", fontSize: "1.1rem" }}>Buy and sell NFTs on the Stellar Network</p>
+          <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
+            Buy and sell NFTs on the Stellar Network
+          </p>
+          <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
+
           <div style={{ display: "flex", justifyContent: "center", gap: "32px", marginTop: "24px", flexWrap: "wrap" }}>
             {[
-              { label: "Your NFTs",      value: listings.length },
+              { label: "Your NFTs", value: listings.length },
               { label: "Listed for Sale", value: listedCount },
-              { label: "Certificates",   value: certCount, color: "#f59e0b" },
-              { label: "Total Value",    value: `${listings.filter(n => n.listed).reduce((a, n) => a + parseFloat(n.price || 0), 0)} XLM` },
+              { label: "Certificates", value: certCount, color: "#f59e0b" },
+              { label: "Total Value", value: `${listings.filter(n => n.listed).reduce((a, n) => a + parseFloat(n.price || 0), 0)} XLM` },
             ].map((stat) => (
               <div key={stat.label} style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "1.5rem", fontWeight: 800, color: stat.color || "#a78bfa" }}>{stat.value}</div>
@@ -189,7 +190,7 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
         <motion.div variants={itemVariants} style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "24px", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {[
-              { key: "all",  label: "All NFTs" },
+              { key: "all", label: "All NFTs" },
               { key: "sale", label: "🏷️ For Sale" },
               { key: "mine", label: "👤 Mine" },
               { key: "cert", label: "🏆 Certificates" },
@@ -199,8 +200,8 @@ export default function MarketplacePage({ walletAddress, nfts, server }) {
           </div>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
             style={{ background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)", borderRadius: "10px", padding: "8px 16px", color: isDark ? "#e2e8f0" : "#1e293b", fontSize: "0.85rem", cursor: "pointer" }}>
-            <option value="newest"     style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Newest First</option>
-            <option value="price-low"  style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Price: Low → High</option>
+            <option value="newest" style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Newest First</option>
+            <option value="price-low" style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Price: Low → High</option>
             <option value="price-high" style={{ background: isDark ? "#1e1e2d" : "#fff" }}>Price: High → Low</option>
           </select>
         </motion.div>

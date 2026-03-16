@@ -12,7 +12,7 @@ const shortenKey = (key) => key ? `${key.slice(0, 6)}...${key.slice(-6)}` : '';
 
 const generateAvatar = (address) => {
   if (!address) return '#6366f1';
-  const colors = ['#6366f1','#8b5cf6','#ec4899','#06b6d4','#10b981','#f59e0b','#ef4444'];
+  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
   const idx = address.charCodeAt(2) % colors.length;
   return colors[idx];
 };
@@ -29,9 +29,9 @@ const ProfilePage = ({ account, nfts, rewardBalance }) => {
   const [jobs, setJobs] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
 
-  const xlmBalance  = account?.balances?.find((b) => b.asset_type === 'native')?.balance || '0';
-  const nftCount    = nfts ? nfts.length : 0;
-  const publicKey   = account?.id || '';
+  const xlmBalance = account?.balances?.find((b) => b.asset_type === 'native')?.balance || '0';
+  const nftCount = nfts ? nfts.length : 0;
+  const publicKey = account?.id || '';
   const avatarColor = generateAvatar(publicKey);
 
   // ── Load jobs from escrow contract ─────────────────────────────────────────
@@ -61,7 +61,7 @@ const ProfilePage = ({ account, nfts, rewardBalance }) => {
               const job = StellarSdk.scValToNative(sim.result.retval);
               list.push({ ...job, id });
             }
-          } catch {}
+          } catch { }
         }
         setJobs(list);
       } catch (e) {
@@ -81,11 +81,11 @@ const ProfilePage = ({ account, nfts, rewardBalance }) => {
     return s;
   };
 
-  const myPostedJobs    = jobs.filter(j => String(j.client) === publicKey);
+  const myPostedJobs = jobs.filter(j => String(j.client) === publicKey);
   const myFreelanceJobs = jobs.filter(j => String(j.freelancer) === publicKey && String(j.freelancer) !== String(j.client));
-  const completedJobs   = jobs.filter(j => getStatusKey(j.status) === 'Completed' && (String(j.client) === publicKey || String(j.freelancer) === publicKey));
-  const xlmEarned       = myFreelanceJobs.filter(j => getStatusKey(j.status) === 'Completed').reduce((sum, j) => sum + Number(j.amount) / 10_000_000, 0);
-  const xlmSpent        = myPostedJobs.filter(j => getStatusKey(j.status) === 'Completed').reduce((sum, j) => sum + Number(j.amount) / 10_000_000, 0);
+  const completedJobs = jobs.filter(j => getStatusKey(j.status) === 'Completed' && (String(j.client) === publicKey || String(j.freelancer) === publicKey));
+  const xlmEarned = myFreelanceJobs.filter(j => getStatusKey(j.status) === 'Completed').reduce((sum, j) => sum + Number(j.amount) / 10_000_000, 0);
+  const xlmSpent = myPostedJobs.filter(j => getStatusKey(j.status) === 'Completed').reduce((sum, j) => sum + Number(j.amount) / 10_000_000, 0);
   const reputationScore = Math.min(100, completedJobs.length * 20 + nftCount * 5);
 
   const handleCopyKey = () => {
@@ -125,7 +125,7 @@ const ProfilePage = ({ account, nfts, rewardBalance }) => {
         style={{ maxWidth: '800px', margin: '0 auto', padding: '24px 16px' }}>
 
         {/* ── HEADER with Avatar ─────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '28px' }}>
+        <motion.div variants={itemVariants} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
           {/* Avatar */}
           <div style={{
             width: '72px', height: '72px', borderRadius: '50%',
@@ -136,22 +136,25 @@ const ProfilePage = ({ account, nfts, rewardBalance }) => {
           }}>
             {getInitials(publicKey)}
           </div>
-          <div>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: isDark ? '#fff' : '#1a1a2e', marginBottom: '4px' }}>
-              My Profile
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
+              My <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Profile</span>
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <code style={{ fontSize: '0.8rem', color: isDark ? '#a78bfa' : '#6d28d9', background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(109,40,217,0.08)', padding: '4px 10px', borderRadius: '8px' }}>
-                {shortenKey(publicKey)}
-              </code>
-              <button onClick={handleCopyKey} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center' }}>
-                {copied ? <CheckIcon className="copy-icon" /> : <CopyIcon className="copy-icon" />}
-              </button>
-              {/* Reputation badge */}
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', padding: '3px 10px', borderRadius: '20px' }}>
-                ⭐ {reputationScore} Rep
-              </span>
-            </div>
+            <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
+              Your on-chain identity and reputation
+            </p>
+            <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+            <code style={{ fontSize: '0.8rem', color: isDark ? '#a78bfa' : '#6d28d9', background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(109,40,217,0.08)', padding: '4px 10px', borderRadius: '8px' }}>
+              {shortenKey(publicKey)}
+            </code>
+            <button onClick={handleCopyKey} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center' }}>
+              {copied ? <CheckIcon className="copy-icon" /> : <CopyIcon className="copy-icon" />}
+            </button>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', padding: '3px 10px', borderRadius: '20px' }}>
+              ⭐ {reputationScore} Rep
+            </span>
           </div>
         </motion.div>
 

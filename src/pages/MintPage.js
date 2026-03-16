@@ -133,8 +133,8 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       } catch (e) {
         throw new Error(
           "Account not found on Stellar testnet. " +
-            "Fund your wallet at: https://friendbot.stellar.org/?addr=" +
-            walletAddress
+          "Fund your wallet at: https://friendbot.stellar.org/?addr=" +
+          walletAddress
         );
       }
 
@@ -205,10 +205,9 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       if (response.status === "ERROR") {
         console.error("❌ ERROR response:", response);
         throw new Error(
-          `Transaction submission failed: ${
-            response.errorResult?.toXDR
-              ? response.errorResult.toXDR("base64")
-              : JSON.stringify(response)
+          `Transaction submission failed: ${response.errorResult?.toXDR
+            ? response.errorResult.toXDR("base64")
+            : JSON.stringify(response)
           }`
         );
       }
@@ -345,12 +344,15 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
     <div className="mint-page-wrapper">
       <style>{styles}</style>
       <div className="mint-bg-glow" />
-      <motion.div className="max-w-5xl mx-auto relative z-10" variants={containerVariants} initial="hidden" animate="visible">
-        <motion.div className="text-center mb-10" variants={itemVariants}>
-          <h1 className={`text-4xl md:text-5xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"} mb-3`}>
-            Mint <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">NFT</span>
+      <motion.div className="max-w-5xl mx-auto relative z-10" variants={containerVariants} initial="hidden" animate="visible" style={{ paddingTop: '2rem' }}>
+        <motion.div variants={itemVariants} style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
+            Mint <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>NFT</span>
           </h1>
-          <p className={`${isDark ? "text-gray-400" : "text-gray-600"} text-lg`}>Create and manage your digital assets on Stellar</p>
+          <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
+            Create and manage your digital assets on Stellar
+          </p>
+          <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

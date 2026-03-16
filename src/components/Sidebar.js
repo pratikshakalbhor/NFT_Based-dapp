@@ -100,7 +100,6 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
     return `${addr.slice(0, 5)}...${addr.slice(-5)}`;
   };
 
-  // ── Navigation links — Jobs (Escrow) वर ठेवलं, simple नावं ──
   const links = [
     { to: "/",           icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { to: "/escrow",     icon: <Briefcase size={18} />,       label: "Jobs",        badge: "NEW" },
@@ -167,10 +166,10 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
           fontSize: "18px",
           boxShadow: isDark ? "0 4px 12px rgba(99,102,241,0.3)" : "0 4px 12px rgba(99,102,241,0.4)"
         }}>💎</div>
-        <span style={{ color: themeStyles.logoText, fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px" }}>NFT dApp</span>
+        <span style={{ color: themeStyles.logoText, fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px" }}>FreelanceChain DApp</span>
       </div>
 
-      {/* Nav Links */}
+      {/* Nav Links */} 
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {links.map((link) => (
           <NavLink
@@ -289,7 +288,7 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
         style={{ background: themeStyles.sidebarBg, backdropFilter: "blur(10px)", borderBottom: `1px solid ${themeStyles.borderColor}` }}>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg, #6366f1, #4f46e5)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>💎</div>
-          <span style={{ color: themeStyles.logoText, fontWeight: 700 }}>NFT dApp</span>
+          <span style={{ color: themeStyles.logoText, fontWeight: 700 }}>FreelanceChain</span>
         </div>
         <button onClick={() => setIsOpen(!isOpen)} style={{ background: "transparent", border: "none", color: themeStyles.activeLinkColor, fontSize: "24px", cursor: "pointer" }}>☰</button>
       </div>
