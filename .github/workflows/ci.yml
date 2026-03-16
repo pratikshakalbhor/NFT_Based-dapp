@@ -108,14 +108,14 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            token/contracts/hello-world/target
+            contract/token/contracts/hello_world/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Check Rust Contract
         run: |
-          cd token/contracts/hello-world
+          cd contract/token/contracts/hello_world
           cargo check --target wasm32-unknown-unknown
 
 
@@ -148,4 +148,3 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
