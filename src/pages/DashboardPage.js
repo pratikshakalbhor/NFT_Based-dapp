@@ -226,7 +226,7 @@ export default function DashboardPage({ walletAddress, balance, nfts }) {
                           </div>
                         </div>
                       </div>
-                      <div style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)", fontSize: "0.78rem", textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)", fontSize: "0.78rem", textAlign: "right", flexShrink: 0, minWidth: "70px", maxWidth: "90px", wordBreak: "break-word" }}>
                         {formatDate(tx.created_at)}
                         <div style={{ marginTop: "2px" }}>
                           <span style={{ background: tx.successful ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)", color: tx.successful ? "#10b981" : "#ef4444", padding: "1px 6px", borderRadius: "4px", fontSize: "0.7rem", fontWeight: 700 }}>

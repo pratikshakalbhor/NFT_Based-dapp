@@ -28,8 +28,11 @@ const uploadToPinata = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
   try {
-    const response = await fetch("http://localhost:5000/api/upload", {
+    const response = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.REACT_APP_PINATA_JWT}`,
+      },
       body: formData,
     });
     if (!response.ok) {
@@ -37,14 +40,10 @@ const uploadToPinata = async (file) => {
       throw new Error(`Upload failed: ${response.status} ${errorText}`);
     }
     const data = await response.json();
-    return data.cid;
+    return data.IpfsHash;
   } catch (error) {
     console.error("IPFS Upload Error:", error);
-    throw new Error(
-      error.message.includes("Failed to fetch")
-        ? "Backend server not running on port 5000"
-        : error.message
-    );
+    throw new Error(error.message || "IPFS upload failed");
   }
 };
 

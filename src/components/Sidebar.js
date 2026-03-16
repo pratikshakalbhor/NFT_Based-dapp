@@ -100,6 +100,7 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
     return `${addr.slice(0, 5)}...${addr.slice(-5)}`;
   };
 
+  // ── Navigation links — Jobs (Escrow) वर ठेवलं, simple नावं ──
   const links = [
     { to: "/",           icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { to: "/escrow",     icon: <Briefcase size={18} />,       label: "Jobs",        badge: "NEW" },
@@ -166,10 +167,10 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
           fontSize: "18px",
           boxShadow: isDark ? "0 4px 12px rgba(99,102,241,0.3)" : "0 4px 12px rgba(99,102,241,0.4)"
         }}>💎</div>
-        <span style={{ color: themeStyles.logoText, fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px" }}>FreelanceChain DApp</span>
+        <span style={{ color: themeStyles.logoText, fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px" }}>FreelanceChain</span>
       </div>
 
-      {/* Nav Links */} 
+      {/* Nav Links */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {links.map((link) => (
           <NavLink
@@ -247,16 +248,33 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
 
       {/* Wallet + Logout */}
       <div style={{ padding: "20px 16px", borderTop: `1px solid ${themeStyles.borderColor}`, display: "flex", flexDirection: "column", gap: "12px" }}>
-        <div style={{
-          background: themeStyles.walletBadgeBg, padding: "12px", borderRadius: "12px",
-          display: "flex", alignItems: "center", gap: "10px",
-          border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.3)'}`
-        }}>
+        <div
+          onClick={() => {
+            navigator.clipboard.writeText(walletAddress);
+            // Show "Copied!" briefly
+            const el = document.getElementById("wallet-copy-hint");
+            if (el) { el.style.display = "block"; setTimeout(() => { el.style.display = "none"; }, 1500); }
+          }}
+          title="Click to copy wallet address"
+          style={{
+            background: themeStyles.walletBadgeBg, padding: "12px", borderRadius: "12px",
+            display: "flex", alignItems: "center", gap: "10px",
+            border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.3)'}`,
+            cursor: "pointer", transition: "all 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(99,102,241,0.6)"}
+          onMouseLeave={e => e.currentTarget.style.borderColor = isDark ? "rgba(99,102,241,0.2)" : "rgba(99,102,241,0.3)"}
+        >
           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
-          <span style={{ color: themeStyles.activeLinkColor, fontSize: "0.85rem", fontFamily: "monospace", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+          <span style={{ color: themeStyles.activeLinkColor, fontSize: "0.85rem", fontFamily: "monospace", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
             <Wallet size={14} />
             {shortenAddress(walletAddress)}
           </span>
+          <span style={{ fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)" }}>📋</span>
+        </div>
+        {/* Copied hint */}
+        <div id="wallet-copy-hint" style={{ display: "none", textAlign: "center", fontSize: "0.75rem", color: "#10b981", fontWeight: 600 }}>
+          ✅ Copied!
         </div>
         <button
           onClick={handleLogout}

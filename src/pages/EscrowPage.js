@@ -449,14 +449,15 @@ export default function EscrowPage({
       style={{ maxWidth: "900px", margin: "0 auto", padding: "20px 16px" }}>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
-          Freelancer <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Escrow</span>
-        </h1>
-        <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
+      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <h1 style={{
+          fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: 800,
+          background: isDark ? "linear-gradient(135deg, #a78bfa, #60a5fa)" : "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "8px",
+        }}>🤝 Freelancer Escrow</h1>
+        <p style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)" }}>
           Safe payments on Stellar blockchain
         </p>
-        <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
       </div>
 
       {/* Status banner */}
@@ -613,8 +614,8 @@ export default function EscrowPage({
                 </div>
 
                 {job.work_url && String(job.work_url) !== "" && (
-                  <div style={{ padding: "8px 12px", background: "rgba(99,102,241,0.1)", borderRadius: "8px", marginBottom: "12px", fontSize: "0.8rem", color: "#a5b4fc" }}>
-                    📎 Work: <a href={String(job.work_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#818cf8" }}>{String(job.work_url)}</a>
+                  <div style={{ padding: "8px 12px", background: "rgba(99,102,241,0.1)", borderRadius: "8px", marginBottom: "12px", fontSize: "0.8rem", color: "#a5b4fc", wordBreak: "break-all", overflowWrap: "break-word" }}>
+                    📎 Work: <a href={String(job.work_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#818cf8", wordBreak: "break-all" }}>{String(job.work_url)}</a>
                   </div>
                 )}
 
