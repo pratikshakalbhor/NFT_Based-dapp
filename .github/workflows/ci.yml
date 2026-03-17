@@ -87,7 +87,7 @@ jobs:
 
 
   # ============================================================
-  # Job 3: Rust Contract Check
+  # Job 3: Rust Contract Check ✅ FIXED
   # ============================================================
   contract:
     name: Check Rust Contract
@@ -108,14 +108,14 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            contract/token/contracts/hello_world/target
+            contract/token/contracts/hello-world/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Check Rust Contract
         run: |
-          cd contract/token/contracts/hello_world
+          cd contract/token/contracts/hello-world
           cargo check --target wasm32-unknown-unknown
 
 
@@ -125,7 +125,7 @@ jobs:
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, contract]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
