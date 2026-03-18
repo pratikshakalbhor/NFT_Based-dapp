@@ -1,174 +1,113 @@
-.gallery-page-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  min-height: 60vh;
-}
-
-.gallery-bg-gradient {
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 80%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.gallery-container {
-  width: 100%;
-  max-width: 1000px;
-  position: relative;
-  z-index: 2;
-  padding: 0 20px;
-}
-
-.gallery-header {
+/* ── Job List ── */
+.job-list-subtitle {
   text-align: center;
-  margin-bottom: 3rem;
+  opacity: 0.6;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
 }
 
-.gallery-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
-}
-
-.gallery-subtitle {
-  font-size: 1.1rem;
-  color: #94a3b8;
-}
-
-/* Grid */
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  width: 100%;
-}
-
-/* NFT Card */
-.nft-card {
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  cursor: default;
-}
-
-.nft-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3);
-}
-
-.nft-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(139, 92, 246, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.nft-card:hover::before {
-  opacity: 1;
-}
-
-.nft-image-container {
-  width: 100%;
-  aspect-ratio: 1;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-
-.nft-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.nft-card:hover .nft-image {
-  transform: scale(1.1);
-}
-
-.nft-info {
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(15, 23, 42, 0.3);
-}
-
-.nft-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #f8fafc;
-  margin-bottom: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nft-meta {
+.job-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.nft-badge {
-  background: rgba(139, 92, 246, 0.1);
-  color: #a78bfa;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-}
-
-/* Empty State */
-.empty-state-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(16px);
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 60px 40px;
-  text-align: center;
-  max-width: 400px;
-  margin: 0 auto;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 12px;
+}
+
+.job-card:hover {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
+
+.job-card-left h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.job-card-left p {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.job-role {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  background: rgba(124, 58, 237, 0.2);
+  border-radius: 20px;
+  color: #a78bfa;
+}
+
+.job-card-right {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 120px;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.job-status {
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-@media (max-width: 640px) {
-  .gallery-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .gallery-title {
-    font-size: 2rem;
-  }
+.job-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.chat-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.chat-loading, .chat-empty {
+  text-align: center;
+  padding: 40px;
+  opacity: 0.5;
+}
+
+.chat-job-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.chat-with {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin: 4px 0 0;
+}
+
+.sender-name {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
 }

@@ -5,8 +5,8 @@ import { useWallet } from "../WalletContext";
 import { signTransaction } from "../walletService";
 import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
 import { useTheme } from "../context/ThemeContext";
-import { shortenAddress } from "../utils";
-import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
+import { shortenAddress } from "../utils"; 
+import { containerVariants, itemVariants } from "../components/ProfilePage";
 
 const HORIZON_URL = "https://horizon-testnet.stellar.org";
 

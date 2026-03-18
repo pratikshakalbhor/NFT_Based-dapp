@@ -5,8 +5,7 @@ import { useWallet } from "../WalletContext";
 import { signTransaction } from "../walletService";
 import { NETWORK, NETWORK_PASSPHRASE, CONTRACT_ID, SOROBAN_SERVER } from "../constants";
 import { useTheme } from "../context/ThemeContext";
-import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
-import { CheckIcon, CopyIcon } from "../components/ProfilePageIcons";
+import { containerVariants, itemVariants, CheckIcon, CopyIcon } from "../components/ProfilePage";
 import "./MintPage.css";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -132,8 +131,8 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       } catch (e) {
         throw new Error(
           "Account not found on Stellar testnet. " +
-            "Fund your wallet at: https://friendbot.stellar.org/?addr=" +
-            walletAddress
+          "Fund your wallet at: https://friendbot.stellar.org/?addr=" +
+          walletAddress
         );
       }
 
@@ -204,10 +203,9 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       if (response.status === "ERROR") {
         console.error("❌ ERROR response:", response);
         throw new Error(
-          `Transaction submission failed: ${
-            response.errorResult?.toXDR
-              ? response.errorResult.toXDR("base64")
-              : JSON.stringify(response)
+          `Transaction submission failed: ${response.errorResult?.toXDR
+            ? response.errorResult.toXDR("base64")
+            : JSON.stringify(response)
           }`
         );
       }

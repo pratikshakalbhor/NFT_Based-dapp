@@ -63,29 +63,29 @@ export const mintNFT = async (walletAddress, name, imageId) => {
     const preparedTx = rpc.assembleTransaction(tx, simulation).build();
 
 
-   
+
     const signedXdr = await signTransaction(preparedTx.toXDR(), {
-  network: NETWORK,
-  networkPassphrase: NETWORK_PASSPHRASE,
-});
+      network: NETWORK,
+      networkPassphrase: NETWORK_PASSPHRASE,
+    });
 
-// Freighter might return object
-const signedXdrString =
-  typeof signedXdr === "object" && signedXdr.signedTxXdr
-    ? signedXdr.signedTxXdr
-    : signedXdr;
+    // Freighter might return object
+    const signedXdrString =
+      typeof signedXdr === "object" && signedXdr.signedTxXdr
+        ? signedXdr.signedTxXdr
+        : signedXdr;
 
-// Convert back to Transaction
-const signedTx = TransactionBuilder.fromXDR(
-  signedXdrString,
-  NETWORK_PASSPHRASE
-);
+    // Convert back to Transaction
+    const signedTx = TransactionBuilder.fromXDR(
+      signedXdrString,
+      NETWORK_PASSPHRASE
+    );
 
-// NOW send transaction object
-const sendResponse = await SOROBAN_SERVER.sendTransaction(
-  signedTx
-);
-   
+    // NOW send transaction object
+    const sendResponse = await SOROBAN_SERVER.sendTransaction(
+      signedTx
+    );
+
 
     // Poll the network to wait for the transaction to be confirmed.
     let getResponse = await SOROBAN_SERVER.getTransaction(sendResponse.hash);

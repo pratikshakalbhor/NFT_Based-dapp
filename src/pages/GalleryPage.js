@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { getImageById } from "../utils/imageMap";
-import { containerVariants, itemVariants } from "../components/ProfilePageAnimations";
+import { getImageById } from "../utils/imageMap"; 
+import { containerVariants, itemVariants } from "../components/ProfilePage";
 import { useTheme } from "../context/ThemeContext";
 import "./GalleryPage.css";
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { useWallet } from "../WalletContext";
@@ -12,16 +13,16 @@ import { useTheme } from "../context/ThemeContext";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_COLORS = {
-  0:          { bg: "rgba(59,130,246,0.15)",  color: "#60a5fa", label: "🔵 Open" },
-  1:          { bg: "rgba(234,179,8,0.15)",   color: "#facc15", label: "🟡 In Progress" },
-  2:          { bg: "rgba(249,115,22,0.15)",  color: "#fb923c", label: "🟠 Submitted" },
-  3:          { bg: "rgba(16,185,129,0.15)",  color: "#34d399", label: "🟢 Completed" },
-  4:          { bg: "rgba(239,68,68,0.15)",   color: "#f87171", label: "🔴 Cancelled" },
-  Open:       { bg: "rgba(59,130,246,0.15)",  color: "#60a5fa", label: "🔵 Open" },
-  InProgress: { bg: "rgba(234,179,8,0.15)",   color: "#facc15", label: "🟡 In Progress" },
-  Submitted:  { bg: "rgba(249,115,22,0.15)",  color: "#fb923c", label: "🟠 Submitted" },
-  Completed:  { bg: "rgba(16,185,129,0.15)",  color: "#34d399", label: "🟢 Completed" },
-  Cancelled:  { bg: "rgba(239,68,68,0.15)",   color: "#f87171", label: "🔴 Cancelled" },
+  0: { bg: "rgba(59,130,246,0.15)", color: "#60a5fa", label: "🔵 Open" },
+  1: { bg: "rgba(234,179,8,0.15)", color: "#facc15", label: "🟡 In Progress" },
+  2: { bg: "rgba(249,115,22,0.15)", color: "#fb923c", label: "🟠 Submitted" },
+  3: { bg: "rgba(16,185,129,0.15)", color: "#34d399", label: "🟢 Completed" },
+  4: { bg: "rgba(239,68,68,0.15)", color: "#f87171", label: "🔴 Cancelled" },
+  Open: { bg: "rgba(59,130,246,0.15)", color: "#60a5fa", label: "🔵 Open" },
+  InProgress: { bg: "rgba(234,179,8,0.15)", color: "#facc15", label: "🟡 In Progress" },
+  Submitted: { bg: "rgba(249,115,22,0.15)", color: "#fb923c", label: "🟠 Submitted" },
+  Completed: { bg: "rgba(16,185,129,0.15)", color: "#34d399", label: "🟢 Completed" },
+  Cancelled: { bg: "rgba(239,68,68,0.15)", color: "#f87171", label: "🔴 Cancelled" },
 };
 
 const shortenAddr = (addr) => {
@@ -41,9 +42,9 @@ const getStatusKey = (status) => {
   if (typeof s === "object" && s !== null) return Object.keys(s)[0];
   return 0;
 };
-const isOpenStatus       = (s) => { const k = getStatusKey(s); return k === 0 || k === "Open"; };
+const isOpenStatus = (s) => { const k = getStatusKey(s); return k === 0 || k === "Open"; };
 const isInProgressStatus = (s) => { const k = getStatusKey(s); return k === 1 || k === "InProgress"; };
-const isSubmittedStatus  = (s) => { const k = getStatusKey(s); return k === 2 || k === "Submitted"; };
+const isSubmittedStatus = (s) => { const k = getStatusKey(s); return k === 2 || k === "Submitted"; };
 
 // ─── Core: build → prepareTransaction → sign → submit → poll ─────────────────
 // Uses rpc.prepareTransaction (handles simulation + resource fees in one call)
@@ -76,7 +77,7 @@ const buildSignSubmit = async (txUnsigned, walletType, label, onStatus) => {
     const poll = await SOROBAN_SERVER.getTransaction(response.hash);
     console.log(`[escrow] ${label} poll ${i + 1}: ${poll.status}`);
     if (poll.status === "SUCCESS") return { hash: response.hash, retval: poll.returnValue };
-    if (poll.status === "FAILED")  throw new Error(`${label} failed on-chain.`);
+    if (poll.status === "FAILED") throw new Error(`${label} failed on-chain.`);
   }
   throw new Error(`${label} timed out. Hash: ${response.hash}`);
 };
@@ -87,19 +88,20 @@ export default function EscrowPage({
   onJobPosted, onJobAccepted, onWorkSubmitted, onPaymentReleased,
 }) {
   const { walletType } = useWallet();
+  const navigate = useNavigate();
   const { isDark } = useTheme();
 
-  const [activeTab, setActiveTab]   = useState("post");
-  const [jobs, setJobs]             = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [status, setStatus]         = useState("");
+  const [activeTab, setActiveTab] = useState("post");
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState("info");
 
   // Form state
-  const [title, setTitle]           = useState("");
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [amount, setAmount]         = useState("");
-  const [workUrl, setWorkUrl]       = useState("");
+  const [amount, setAmount] = useState("");
+  const [workUrl, setWorkUrl] = useState("");
   const [submitJobId, setSubmitJobId] = useState(null);
 
   // ── Status helper ─────────────────────────────────────────────────────────
@@ -175,11 +177,11 @@ export default function EscrowPage({
   // Without TX 1, the contract's token.transfer() throws:
   //   Error(WasmVm, UnexpectedSize) → Func(MismatchingParameterLen)  ← your original error
   const handlePostJob = async () => {
-    if (!title.trim())       { showStatus("Please enter a job title!", "error"); return; }
+    if (!title.trim()) { showStatus("Please enter a job title!", "error"); return; }
     if (!description.trim()) { showStatus("Please enter a description!", "error"); return; }
     const xlm = parseFloat(amount);
-    if (!xlm || xlm <= 0)    { showStatus("Please enter a valid XLM amount!", "error"); return; }
-    if (!walletType)         { showStatus("Wallet not connected.", "error"); return; }
+    if (!xlm || xlm <= 0) { showStatus("Please enter a valid XLM amount!", "error"); return; }
+    if (!walletType) { showStatus("Wallet not connected.", "error"); return; }
 
     const amountStroops = Math.round(xlm * 10_000_000);
     // Fetch current ledger + 500 (~42 min). Cannot use large hardcoded value —
@@ -416,15 +418,15 @@ export default function EscrowPage({
 
   // ── Derived lists ─────────────────────────────────────────────────────────
   const openJobs = jobs.filter((j) => isOpenStatus(j.status));
-  const myJobs   = jobs.filter((j) => {
-    const isMyClient     = j.client === walletAddress;
-    const isFreelancer   = j.freelancer === walletAddress && j.freelancer !== j.client;
+  const myJobs = jobs.filter((j) => {
+    const isMyClient = j.client === walletAddress;
+    const isFreelancer = j.freelancer === walletAddress && j.freelancer !== j.client;
     return isMyClient || isFreelancer;
   });
 
   const tabs = [
-    { id: "post",   label: "📝 Post Job" },
-    { id: "find",   label: "🔍 Find Jobs" },
+    { id: "post", label: "📝 Post Job" },
+    { id: "find", label: "🔍 Find Jobs" },
     { id: "myjobs", label: "💼 My Jobs" },
   ];
 
@@ -570,6 +572,11 @@ export default function EscrowPage({
                   ) : (
                     <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)", padding: "4px 8px", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>Your job</span>
                   )}
+                  <button
+                    onClick={() => navigate("/chat", { state: { recipientAddress: String(job.client) } })}
+                    style={{ marginTop: "8px", padding: "8px 16px", background: "linear-gradient(135deg, #7c3aed, #4f46e5)", border: "none", borderRadius: "10px", color: "#fff", fontWeight: 600, cursor: "pointer", display: "block" }}>
+                    💬 Chat with Client
+                  </button>
                 </div>
               </div>
             </div>
@@ -586,10 +593,10 @@ export default function EscrowPage({
               😔 No jobs yet! Post or accept a job.
             </div>
           ) : myJobs.map((job) => {
-            const isClient     = String(job.client)     === walletAddress;
+            const isClient = String(job.client) === walletAddress;
             const isFreelancer = String(job.freelancer) === walletAddress && String(job.freelancer) !== String(job.client);
-            const statusKey    = getStatusKey(job.status);
-            const statusInfo   = STATUS_COLORS[statusKey] || STATUS_COLORS[0];
+            const statusKey = getStatusKey(job.status);
+            const statusInfo = STATUS_COLORS[statusKey] || STATUS_COLORS[0];
 
             return (
               <div key={job.id} style={cardStyle}>
@@ -647,6 +654,14 @@ export default function EscrowPage({
                     ❌ Cancel & Refund XLM
                   </button>
                 )}
+                <button
+                  onClick={() => {
+                    const chatWith = isClient ? String(job.freelancer) : String(job.client);
+                    navigate("/chat", { state: { recipientAddress: chatWith } });
+                  }}
+                  style={{ marginTop: "8px", padding: "10px 20px", background: "linear-gradient(135deg, #7c3aed, #4f46e5)", border: "none", borderRadius: "10px", color: "#fff", fontWeight: 600, cursor: "pointer" }}>
+                  💬 {isClient ? "Chat with Freelancer" : "Chat with Client"}
+                </button>
               </div>
             );
           })}

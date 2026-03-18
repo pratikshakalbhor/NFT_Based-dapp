@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
-import { 
+import {
   LayoutDashboard,
   CreditCard,
   ImagePlus,
@@ -71,7 +71,7 @@ const SettingsModal = ({ isDark, toggleTheme, onClose }) => {
                 cursor: 'pointer', fontWeight: 600
               }}
             >
-              {isDark ? <Moon size={16} /> : <Sun size={16} />} 
+              {isDark ? <Moon size={16} /> : <Sun size={16} />}
               {isDark ? 'Dark' : 'Light'}
             </button>
           </div>
@@ -92,7 +92,6 @@ const SettingsModal = ({ isDark, toggleTheme, onClose }) => {
 const Sidebar = ({ walletAddress, onDisconnect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
 
   const shortenAddress = (addr) => {
@@ -100,21 +99,21 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
     return `${addr.slice(0, 5)}...${addr.slice(-5)}`;
   };
 
-  // ── Navigation links — Jobs (Escrow) वर ठेवलं, simple नावं ──
+  // ── Navigation links — Chat removed ──
   const links = [
-    { to: "/",           icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-    { to: "/escrow",     icon: <Briefcase size={18} />,       label: "Jobs",        badge: "NEW" },
-    { to: "/payment",    icon: <CreditCard size={18} />,      label: "Payment" },
-    { to: "/mint",       icon: <ImagePlus size={18} />,       label: "Mint NFT" },
-    { to: "/gallery",    icon: <Images size={18} />,          label: "Gallery" },
-    { to: "/marketplace",icon: <Store size={18} />,           label: "Marketplace" },
-    { to: "/activity",   icon: <Activity size={18} />,        label: "Activity" },
-    { to: "/profile",    icon: <User size={18} />,            label: "Profile" },
+    { to: "/", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
+    { to: "/escrow", icon: <Briefcase size={18} />, label: "Jobs", badge: "NEW" },
+    { to: "/payment", icon: <CreditCard size={18} />, label: "Payment" },
+    { to: "/mint", icon: <ImagePlus size={18} />, label: "Mint NFT" },
+    { to: "/gallery", icon: <Images size={18} />, label: "Gallery" },
+    { to: "/marketplace", icon: <Store size={18} />, label: "Marketplace" },
+    { to: "/activity", icon: <Activity size={18} />, label: "Activity" },
+    { to: "/profile", icon: <User size={18} />, label: "Profile" },
   ];
 
   const handleLogout = () => {
     if (onDisconnect) onDisconnect();
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const themeStyles = {
@@ -158,16 +157,27 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
       boxShadow: isDark ? 'none' : '2px 0 10px rgba(0,0,0,0.05)'
     }}>
       {/* Logo */}
-      <div style={{ padding: "32px 24px", display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+      <div style={{
+        padding: "20px 24px",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        marginBottom: "8px",
+        borderBottom: `1px solid ${themeStyles.borderColor}`,
+      }}>
         <div style={{
           width: "36px", height: "36px",
           background: "linear-gradient(135deg, #6366f1, #4f46e5)",
           borderRadius: "10px",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "18px",
-          boxShadow: isDark ? "0 4px 12px rgba(99,102,241,0.3)" : "0 4px 12px rgba(99,102,241,0.4)"
+          fontSize: "18px", flexShrink: 0,
         }}>💎</div>
-        <span style={{ color: themeStyles.logoText, fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px" }}>FreelanceChain</span>
+        <span style={{
+          color: themeStyles.logoText,
+          fontSize: "1rem",
+          fontWeight: 800,
+          letterSpacing: "-0.5px",
+        }}>FreelanceChain</span>
       </div>
 
       {/* Nav Links */}
@@ -189,7 +199,6 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
                   {link.icon}
                 </span>
                 <span style={{ flex: 1 }}>{link.label}</span>
-                {/* "Jobs" label वर highlight badge */}
                 {link.badge && (
                   <span style={{
                     fontSize: "0.6rem", fontWeight: 700,
@@ -251,7 +260,6 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
         <div
           onClick={() => {
             navigator.clipboard.writeText(walletAddress);
-            // Show "Copied!" briefly
             const el = document.getElementById("wallet-copy-hint");
             if (el) { el.style.display = "block"; setTimeout(() => { el.style.display = "none"; }, 1500); }
           }}
@@ -272,10 +280,11 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
           </span>
           <span style={{ fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)" }}>📋</span>
         </div>
-        {/* Copied hint */}
+
         <div id="wallet-copy-hint" style={{ display: "none", textAlign: "center", fontSize: "0.75rem", color: "#10b981", fontWeight: 600 }}>
           ✅ Copied!
         </div>
+
         <button
           onClick={handleLogout}
           style={{
@@ -295,32 +304,51 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
   return (
     <>
       <AnimatePresence>
-        {isSettingsOpen && <SettingsModal isDark={isDark} toggleTheme={toggleTheme} onClose={() => setIsSettingsOpen(false)} />}
+        {isSettingsOpen && (
+          <SettingsModal
+            isDark={isDark}
+            toggleTheme={toggleTheme}
+            onClose={() => setIsSettingsOpen(false)}
+          />
+        )}
       </AnimatePresence>
 
       {/* Desktop */}
       <div className="hidden md:block">{sidebarContent}</div>
 
       {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 w-full z-40 p-4 flex justify-between items-center"
-        style={{ background: themeStyles.sidebarBg, backdropFilter: "blur(10px)", borderBottom: `1px solid ${themeStyles.borderColor}` }}>
+      <div
+        className="md:hidden fixed top-0 left-0 w-full z-40 p-4 flex justify-between items-center"
+        style={{
+          background: themeStyles.sidebarBg,
+          backdropFilter: "blur(10px)",
+          borderBottom: `1px solid ${themeStyles.borderColor}`
+        }}
+      >
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <div style={{ width: "28px", height: "28px", background: "linear-gradient(135deg, #6366f1, #4f46e5)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>💎</div>
           <span style={{ color: themeStyles.logoText, fontWeight: 700 }}>FreelanceChain</span>
         </div>
-        <button onClick={() => setIsOpen(!isOpen)} style={{ background: "transparent", border: "none", color: themeStyles.activeLinkColor, fontSize: "24px", cursor: "pointer" }}>☰</button>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          style={{ background: "transparent", border: "none", color: themeStyles.activeLinkColor, fontSize: "24px", cursor: "pointer" }}
+        >
+          ☰
+        </button>
       </div>
 
       {/* Mobile overlay */}
       <AnimatePresence>
         {isOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
               style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", zIndex: 45, backdropFilter: "blur(4px)" }}
               className="md:hidden"
             />
-            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+            <motion.div
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               style={{ zIndex: 50, position: "fixed", top: 0, left: 0 }}
               className="md:hidden"
@@ -337,6 +365,7 @@ const Sidebar = ({ walletAddress, onDisconnect }) => {
       `}</style>
     </>
   );
+
 };
 
 export default Sidebar;
