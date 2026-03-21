@@ -182,7 +182,7 @@ const NavBar = () => {
                 onClick={handleChatClick}
                 title="Chat"
               >
-                💬
+                
                 {unreadCount > 0 && (
                   <span className="unread-badge">
                     {unreadCount > 9 ? '9+' : unreadCount}

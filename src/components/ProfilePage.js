@@ -1,46 +1,377 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
-import { ESCROW_CONTRACT_ID, SOROBAN_SERVER, NETWORK_PASSPHRASE } from '../constants';
-import * as StellarSdk from '@stellar/stellar-sdk';
-import './ProfilePage.css';
+import React, { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
+import { useWallet } from "../WalletContext";
+import { ref, onValue } from "firebase/database";
+import { db } from "../firebase";
+import { 
+  Copy, 
+  Check, 
+  Wallet, 
+  LayoutGrid, 
+  History, 
+  CreditCard, 
+  Image as ImageIcon,
+  Tag,
+  ShoppingBag
+} from "lucide-react";
+import { shortenAddress } from "../utils";
+import { motion } from "framer-motion";
+
 
 export const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
+  visible: { 
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
+    transition: { staggerChildren: 0.1 }
+  }
 };
 
 export const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
-  },
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  }
 };
 
-export const AccountIcon = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-      fill="currentColor"
-    />
-  </svg>
-);
+const ProfilePage = ({ account, nfts: propNfts }) => {
+  const { isDark } = useTheme();
+  const { walletAddress } = useWallet();
+  
+  const [activeTab, setActiveTab] = useState("overview");
+  const [copied, setCopied] = useState(false);
+  const [soldCount, setSoldCount] = useState(0);
+  const [purchasedCount, setPurchasedCount] = useState(0);
+  const [marketHistory, setMarketHistory] = useState([]);
+  const [xlmBalance, setXlmBalance] = useState("0");
 
-export const XLMIcon = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-    <path d="M12 7v10M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-);
+  useEffect(() => {
+    if (!walletAddress) return;
 
+    // 1. Get Balance
+    if (account) {
+      const native = account.balances.find(b => b.asset_type === "native");
+      if (native) setXlmBalance(parseFloat(native.balance).toFixed(2));
+    }
+
+    // 2. Fetch Firebase History
+    const marketRef = ref(db, "marketplace");
+    const unsubscribe = onValue(marketRef, (snap) => {
+      const data = snap.val() || {};
+      const history = [];
+      let sCount = 0;
+      let pCount = 0;
+
+      Object.values(data).forEach(item => {
+        // Sold items
+        if (item.sold && item.previousOwner === walletAddress) {
+          sCount++;
+          history.push({ ...item, actionType: "sold", date: item.soldAt });
+        }
+        // Purchased items
+        if (item.sold && item.ownerFull === walletAddress) {
+          pCount++;
+          history.push({ ...item, actionType: "bought", date: item.soldAt });
+        }
+      });
+
+      setSoldCount(sCount);
+      setPurchasedCount(pCount);
+      setMarketHistory(history.sort((a, b) => b.date - a.date));
+    });
+
+    return () => unsubscribe();
+  }, [walletAddress, account]);
+
+  const handleCopy = () => {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const tabButtonStyle = (key) => ({
+    padding: "10px 24px",
+    background: "transparent",
+    border: "none",
+    borderBottom: activeTab === key 
+      ? `2px solid ${isDark ? "#a78bfa" : "#6366f1"}` 
+      : "2px solid transparent",
+    color: activeTab === key 
+      ? (isDark ? "#fff" : "#0f172a") 
+      : (isDark ? "#64748b" : "#94a3b8"),
+    fontWeight: activeTab === key ? 700 : 500,
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    transition: "all 0.2s",
+  });
+
+  const statCardStyle = {
+    background: isDark ? "rgba(255,255,255,0.04)" : "#fff",
+    border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "14px",
+    padding: "20px",
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "120px",
+  };
+
+  if (!walletAddress) return <div style={{ padding: "40px", textAlign: "center" }}>Please connect wallet</div>;
+
+  return (
+    <motion.div 
+      className="main-content" 
+      style={{ padding: "2rem", maxWidth: "1000px", margin: "0 auto", color: isDark ? "#e2e8f0" : "#1e293b" }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      
+      {/* Header Section */}
+      <motion.div variants={itemVariants} style={{ marginBottom: "32px" }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: 800, margin: "0 0 8px", color: isDark ? "#fff" : "#0f172a" }}>Profile</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{
+            background: isDark ? "rgba(99, 102, 241, 0.1)" : "#eff6ff",
+            color: isDark ? "#818cf8" : "#3b82f6",
+            padding: "6px 12px",
+            borderRadius: "8px",
+            fontFamily: "monospace",
+            fontSize: "0.9rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            <Wallet size={16} />
+            {shortenAddress(walletAddress)}
+          </div>
+          <button 
+            onClick={handleCopy}
+            style={{
+              background: "transparent",
+              border: isDark ? "1px solid rgba(255,255,255,0.2)" : "1px solid #cbd5e1",
+              borderRadius: "8px",
+              padding: "6px",
+              cursor: "pointer",
+              color: isDark ? "#cbd5e1" : "#64748b",
+              display: "flex",
+              alignItems: "center"
+            }}
+            title="Copy Address"
+          >
+            {copied ? <Check size={16} color="#10b981" /> : <Copy size={16} />}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Stats Grid */}
+      <motion.div variants={itemVariants} style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
+        gap: "16px", 
+        marginBottom: "40px" 
+      }}>
+        {/* Balance */}
+        <div style={statCardStyle}>
+          <div style={{ 
+            width: "48px", height: "48px", borderRadius: "50%", 
+            background: isDark ? "rgba(99, 102, 241, 0.15)" : "#eff6ff",
+            color: "#6366f1", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "12px" 
+          }}>
+            <CreditCard size={24} />
+          </div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: isDark ? "#fff" : "#0f172a" }}>
+            {xlmBalance}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", marginTop: "4px" }}>
+            XLM Balance
+          </div>
+        </div>
+
+        {/* Owned */}
+        <div style={statCardStyle}>
+          <div style={{ 
+            width: "48px", height: "48px", borderRadius: "50%", 
+            background: isDark ? "rgba(16, 185, 129, 0.15)" : "#ecfdf5",
+            color: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "12px" 
+          }}>
+            <ImageIcon size={24} />
+          </div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: isDark ? "#fff" : "#0f172a" }}>
+            {propNfts ? propNfts.length : 0}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", marginTop: "4px" }}>
+            NFTs Owned
+          </div>
+        </div>
+
+        {/* Sold */}
+        <div style={statCardStyle}>
+          <div style={{ 
+            width: "48px", height: "48px", borderRadius: "50%", 
+            background: isDark ? "rgba(245, 158, 11, 0.15)" : "#fffbeb",
+            color: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "12px" 
+          }}>
+            <Tag size={24} />
+          </div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: isDark ? "#fff" : "#0f172a" }}>
+            {soldCount}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", marginTop: "4px" }}>
+            NFTs Sold
+          </div>
+        </div>
+
+        {/* Purchased */}
+        <div style={statCardStyle}>
+          <div style={{ 
+            width: "48px", height: "48px", borderRadius: "50%", 
+            background: isDark ? "rgba(236, 72, 153, 0.15)" : "#fdf2f8",
+            color: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "12px" 
+          }}>
+            <ShoppingBag size={24} />
+          </div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: isDark ? "#fff" : "#0f172a" }}>
+            {purchasedCount}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", marginTop: "4px" }}>
+            NFTs Purchased
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tabs */}
+      <motion.div variants={itemVariants} style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e2e8f0", marginBottom: "24px" }}>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button style={tabButtonStyle("overview")} onClick={() => setActiveTab("overview")}>
+            <LayoutGrid size={16} /> Overview
+          </button>
+          <button style={tabButtonStyle("nfts")} onClick={() => setActiveTab("nfts")}>
+            <ImageIcon size={16} /> My NFTs
+          </button>
+          <button style={tabButtonStyle("history")} onClick={() => setActiveTab("history")}>
+            <History size={16} /> History
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Tab Content */}
+      <div style={{ minHeight: "300px" }}>
+        
+        {/* OVERVIEW TAB */}
+        {activeTab === "overview" && (
+          <motion.div variants={itemVariants} style={{ color: isDark ? "#94a3b8" : "#64748b" }}>
+            <h3 style={{ color: isDark ? "#fff" : "#0f172a", marginTop: 0 }}>Wallet Details</h3>
+            <div style={{ 
+              background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc",
+              padding: "20px", 
+              borderRadius: "12px", 
+              border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #e2e8f0" 
+            }}>
+              <p style={{ margin: "0 0 10px" }}><strong>Network:</strong> Testnet</p>
+              <p style={{ margin: "0 0 10px" }}><strong>Sequence Number:</strong> {account?.sequence || "Loading..."}</p>
+              <p style={{ margin: 0 }}><strong>Subentry Count:</strong> {account?.subentry_count || 0}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* MY NFTS TAB */}
+        {activeTab === "nfts" && (
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
+            {propNfts && propNfts.length > 0 ? (
+              propNfts.map((nft) => (
+                <motion.div key={nft.id} variants={itemVariants} style={{ 
+                  background: isDark ? "rgba(30, 41, 59, 0.4)" : "#fff",
+                  border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  transition: "transform 0.2s",
+                }}>
+                  <div style={{ 
+                    height: "200px", 
+                    background: isDark ? "#0f172a" : "#f1f5f9",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)",
+                    fontSize: "3rem"
+                  }}>
+                    {nft.image ? (
+                        <img src={nft.image} alt={nft.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : "🖼️"}
+                  </div>
+                  <div style={{ padding: "16px" }}>
+                    <h4 style={{ margin: "0 0 4px", color: isDark ? "#fff" : "#0f172a", fontSize: "1rem" }}>{nft.name || `NFT #${nft.id}`}</h4>
+                    <span style={{ fontSize: "0.75rem", color: "#6366f1", background: "rgba(99, 102, 241, 0.1)", padding: "2px 8px", borderRadius: "4px" }}>
+                      ID: {nft.id.toString().slice(0,8)}...
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "40px", opacity: 0.6 }}>
+                No NFTs found in this wallet.
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* HISTORY TAB */}
+        {activeTab === "history" && (
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {marketHistory.length > 0 ? (
+              marketHistory.map((item, i) => (
+                <motion.div key={i} variants={itemVariants} style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  padding: "16px",
+                  background: isDark ? "rgba(255,255,255,0.03)" : "#fff",
+                  border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #e2e8f0",
+                  borderRadius: "12px"
+                }}>
+                  <div style={{ 
+                    padding: "10px", 
+                    borderRadius: "50%", 
+                    background: item.actionType === "bought" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)",
+                    color: item.actionType === "bought" ? "#10b981" : "#f59e0b",
+                    marginRight: "16px"
+                  }}>
+                    {item.actionType === "bought" ? <ShoppingBag size={20} /> : <Tag size={20} />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: isDark ? "#fff" : "#0f172a" }}>
+                      {item.actionType === "bought" ? "Purchased NFT" : "Sold NFT"}
+                    </div>
+                    <div style={{ fontSize: "0.85rem", color: isDark ? "#94a3b8" : "#64748b" }}>
+                      {item.name} for <strong>{item.price} XLM</strong>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: isDark ? "#64748b" : "#94a3b8" }}>
+                    {new Date(item.soldAt).toLocaleDateString()}
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div style={{ textAlign: "center", padding: "40px", opacity: 0.6 }}>
+                No transaction history found.
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+// ── Exported Icons (used by MintPage, PaymentPage) ──────────────────────────
 export const CheckIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
@@ -54,293 +385,11 @@ export const CopyIcon = ({ className }) => (
   </svg>
 );
 
-export const RewardTokenIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m-6.364-3.636L5 12m14 0h-1M7.636 7.636L8 8m8 8l.364.364M12 21a9 9 0 110-18 9 9 0 010 18z" />
+export const XLMIcon = ({ className, style }) => (
+  <svg className={className} style={style} viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+    <path d="M12 7v10M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const shortenKey = (key) => key ? `${key.slice(0, 6)}...${key.slice(-6)}` : '';
-
-const generateAvatar = (address) => {
-  if (!address) return '#6366f1';
-  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
-  const idx = address.charCodeAt(2) % colors.length;
-  return colors[idx];
-};
-
-const getInitials = (address) => {
-  if (!address) return '??';
-  return address.slice(0, 2).toUpperCase();
-};
-
-// ─── ProfilePage ──────────────────────────────────────────────────────────────
-const ProfilePage = ({ account, nfts, rewardBalance }) => {
-  const { isDark } = useTheme();
-  const [copied, setCopied] = useState(false);
-  const [jobs, setJobs] = useState([]);
-  const [loadingJobs, setLoadingJobs] = useState(true);
-
-  const xlmBalance = account?.balances?.find((b) => b.asset_type === 'native')?.balance || '0';
-  const nftCount = nfts ? nfts.length : 0;
-  const publicKey = account?.id || '';
-  const avatarColor = generateAvatar(publicKey);
-
-  // ── Load jobs from escrow contract ─────────────────────────────────────────
-  useEffect(() => {
-    if (!publicKey) return;
-    const load = async () => {
-      try {
-        setLoadingJobs(true);
-        const dummy = new StellarSdk.Account(publicKey, '0');
-        const totalTx = new StellarSdk.TransactionBuilder(dummy, { fee: '100', networkPassphrase: NETWORK_PASSPHRASE })
-          .addOperation(StellarSdk.Operation.invokeContractFunction({ contract: ESCROW_CONTRACT_ID, function: 'get_total', args: [] }))
-          .setTimeout(30).build();
-        const totalSim = await SOROBAN_SERVER.simulateTransaction(totalTx);
-        if (!totalSim?.result?.retval) { setJobs([]); return; }
-        const total = Number(StellarSdk.scValToNative(totalSim.result.retval));
-        const list = [];
-        for (let id = 1; id <= total; id++) {
-          try {
-            const jobTx = new StellarSdk.TransactionBuilder(dummy, { fee: '100', networkPassphrase: NETWORK_PASSPHRASE })
-              .addOperation(StellarSdk.Operation.invokeContractFunction({
-                contract: ESCROW_CONTRACT_ID, function: 'get_job',
-                args: [StellarSdk.nativeToScVal(id, { type: 'u32' })],
-              }))
-              .setTimeout(30).build();
-            const sim = await SOROBAN_SERVER.simulateTransaction(jobTx);
-            if (sim?.result?.retval) {
-              const job = StellarSdk.scValToNative(sim.result.retval);
-              list.push({ ...job, id });
-            }
-          } catch { }
-        }
-        setJobs(list);
-      } catch (e) {
-        console.error('Profile jobs load error:', e);
-      } finally {
-        setLoadingJobs(false);
-      }
-    };
-    load();
-  }, [publicKey]);
-
-  // ── Computed stats ──────────────────────────────────────────────────────────
-  const getStatusKey = (s) => {
-    if (!s) return 'Open';
-    if (typeof s === 'string') return s;
-    if (typeof s === 'object') return Object.keys(s)[0];
-    return s;
-  };
-
-  const myPostedJobs = jobs.filter(j => String(j.client) === publicKey);
-  const myFreelanceJobs = jobs.filter(j => String(j.freelancer) === publicKey && String(j.freelancer) !== String(j.client));
-  const completedJobs = jobs.filter(j => getStatusKey(j.status) === 'Completed' && (String(j.client) === publicKey || String(j.freelancer) === publicKey));
-  const xlmEarned = myFreelanceJobs.filter(j => getStatusKey(j.status) === 'Completed').reduce((sum, j) => sum + Number(j.amount) / 10_000_000, 0);
-  const xlmSpent = myPostedJobs.filter(j => getStatusKey(j.status) === 'Completed').reduce((sum, j) => sum + Number(j.amount) / 10_000_000, 0);
-  const reputationScore = Math.min(100, completedJobs.length * 20 + nftCount * 5);
-
-  const handleCopyKey = () => {
-    navigator.clipboard.writeText(publicKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // ── Styles ──────────────────────────────────────────────────────────────────
-  const card = {
-    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.9)',
-    border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.1)',
-    borderRadius: '20px', padding: '24px', marginBottom: '20px',
-  };
-  const statCard = {
-    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-    border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
-    borderRadius: '16px', padding: '20px', textAlign: 'center',
-  };
-  const label = { fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.5px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textTransform: 'uppercase', marginBottom: '6px' };
-  const value = { fontSize: '1.6rem', fontWeight: 800, color: isDark ? '#fff' : '#1a1a2e' };
-
-  if (!account) {
-    return (
-      <div className="profile-page-wrapper">
-        <motion.div className="loading-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="loading-spinner" />
-          <p className="loading-text" style={{ color: isDark ? '#fff' : '#1a1a2e' }}>Loading account details...</p>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="profile-page-wrapper">
-      <motion.div className="profile-container" variants={containerVariants} initial="hidden" animate="visible"
-        style={{ maxWidth: '800px', margin: '0 auto', padding: '24px 16px' }}>
-
-        {/* ── HEADER with Avatar ─────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
-          {/* Avatar */}
-          <div style={{
-            width: '72px', height: '72px', borderRadius: '50%',
-            background: `linear-gradient(135deg, ${avatarColor}, ${avatarColor}88)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.6rem', fontWeight: 800, color: '#fff',
-            boxShadow: `0 8px 24px ${avatarColor}44`, flexShrink: 0,
-          }}>
-            {getInitials(publicKey)}
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a2e" }}>
-              My <span style={{ background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Profile</span>
-            </h1>
-            <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: '4px' }}>
-              Your on-chain identity and reputation
-            </p>
-            <div style={{ width: "48px", height: "3px", background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", borderRadius: "2px", margin: '8px auto 0' }} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-            <code style={{ fontSize: '0.8rem', color: isDark ? '#a78bfa' : '#6d28d9', background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(109,40,217,0.08)', padding: '4px 10px', borderRadius: '8px' }}>
-              {shortenKey(publicKey)}
-            </code>
-            <button onClick={handleCopyKey} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center' }}>
-              {copied ? <CheckIcon className="copy-icon" /> : <CopyIcon className="copy-icon" />}
-            </button>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', padding: '3px 10px', borderRadius: '20px' }}>
-              ⭐ {reputationScore} Rep
-            </span>
-          </div>
-        </motion.div>
-
-        {/* ── WALLET STATS ───────────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} style={card}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a2e', marginBottom: '16px' }}>💰 Wallet</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-            <div style={statCard}>
-              <div style={label}>XLM Balance</div>
-              <div style={value}>{parseFloat(xlmBalance).toFixed(0)}</div>
-              <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '4px' }}>Available</div>
-            </div>
-            <div style={statCard}>
-              <div style={label}>NFTs Owned</div>
-              <div style={value}>{nftCount}</div>
-              <div style={{ fontSize: '0.75rem', color: '#a78bfa', marginTop: '4px' }}>Collection</div>
-            </div>
-            <div style={statCard}>
-              <div style={label}>Reward Token</div>
-              <div style={value}>{rewardBalance || 0}</div>
-              <div style={{ fontSize: '0.75rem', color: '#60a5fa', marginTop: '4px' }}>Token</div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ── JOBS STATS ─────────────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} style={card}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a2e', marginBottom: '16px' }}>💼 Jobs Stats</h2>
-          {loadingJobs ? (
-            <div style={{ textAlign: 'center', padding: '20px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>⏳ Loading...</div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-              <div style={statCard}>
-                <div style={label}>Jobs Posted</div>
-                <div style={value}>{myPostedJobs.length}</div>
-                <div style={{ fontSize: '0.75rem', color: '#60a5fa', marginTop: '4px' }}>As Client</div>
-              </div>
-              <div style={statCard}>
-                <div style={label}>Jobs Accepted</div>
-                <div style={value}>{myFreelanceJobs.length}</div>
-                <div style={{ fontSize: '0.75rem', color: '#a78bfa', marginTop: '4px' }}>As Freelancer</div>
-              </div>
-              <div style={statCard}>
-                <div style={label}>XLM Earned</div>
-                <div style={{ ...value, fontSize: '1.3rem', color: '#10b981' }}>{xlmEarned.toFixed(1)}</div>
-                <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '4px' }}>Freelance Income</div>
-              </div>
-              <div style={statCard}>
-                <div style={label}>XLM Spent</div>
-                <div style={{ ...value, fontSize: '1.3rem', color: '#f59e0b' }}>{xlmSpent.toFixed(1)}</div>
-                <div style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '4px' }}>Hired Others</div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* ── REPUTATION ─────────────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} style={card}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a2e', marginBottom: '16px' }}>⭐ Reputation Score</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '64px', height: '64px', borderRadius: '50%', flexShrink: 0,
-              background: `conic-gradient(#f59e0b ${reputationScore * 3.6}deg, ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} 0deg)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: isDark ? 'rgba(13,17,28,0.98)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', color: '#f59e0b' }}>
-                {reputationScore}
-              </div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ height: '8px', borderRadius: '4px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', overflow: 'hidden', marginBottom: '8px' }}>
-                <div style={{ height: '100%', width: `${reputationScore}%`, background: 'linear-gradient(90deg, #f59e0b, #d97706)', borderRadius: '4px', transition: 'width 1s ease' }} />
-              </div>
-              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>✅ {completedJobs.length} jobs completed</span>
-                <span style={{ fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>🖼️ {nftCount} NFTs owned</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ── RECENT JOBS ────────────────────────────────────────────────── */}
-        {jobs.length > 0 && (
-          <motion.div variants={itemVariants} style={card}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a2e', marginBottom: '16px' }}>📋 Recent Jobs</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {jobs.filter(j => String(j.client) === publicKey || String(j.freelancer) === publicKey).slice(-5).reverse().map(job => {
-                const sk = getStatusKey(job.status);
-                const statusColor = { Open: '#60a5fa', InProgress: '#facc15', Submitted: '#fb923c', Completed: '#34d399', Cancelled: '#f87171' }[sk] || '#60a5fa';
-                return (
-                  <div key={job.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', borderRadius: '12px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: isDark ? '#fff' : '#1a1a2e' }}>{job.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginTop: '2px' }}>Job #{job.id}</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: statusColor, background: `${statusColor}20`, padding: '3px 10px', borderRadius: '20px', marginBottom: '4px' }}>{sk}</div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981' }}>{(Number(job.amount) / 10_000_000).toFixed(0)} XLM</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── NFT CERTIFICATES ───────────────────────────────────────────── */}
-        {nfts && nfts.length > 0 && (
-          <motion.div variants={itemVariants} style={card}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a2e', marginBottom: '16px' }}>🏆 NFT Collection</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-              {nfts.slice(0, 6).map((nft, i) => (
-                <div key={i} style={{ borderRadius: '12px', overflow: 'hidden', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-                  <div style={{ height: '100px', background: `linear-gradient(135deg, ${generateAvatar(nft.name || String(i))}44, ${generateAvatar(nft.name || String(i))}22)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>
-                    🖼️
-                  </div>
-                  <div style={{ padding: '8px' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: isDark ? '#fff' : '#1a1a2e', truncate: true }}>{nft.name || 'NFT'}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── Footer ─────────────────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} style={{ textAlign: 'center', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontSize: '0.75rem', marginTop: '8px' }}>
-          Connected to Stellar Network • Based on latest account data
-        </motion.div>
-
-      </motion.div>
-    </div>
-  );
-};
 
 export default ProfilePage;

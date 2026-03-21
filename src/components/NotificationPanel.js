@@ -11,7 +11,7 @@ const NotificationPanel = ({ walletAddress }) => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
 
-  
+
   useEffect(() => {
     if (!walletAddress) return;
     const unsubscribe = getNotifications(walletAddress, (notifs) => {
@@ -20,7 +20,7 @@ const NotificationPanel = ({ walletAddress }) => {
     return () => unsubscribe();
   }, [walletAddress]);
 
-  
+
   useEffect(() => {
     const handleClick = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) {
@@ -113,7 +113,7 @@ const NotificationPanel = ({ walletAddress }) => {
             alignItems: "center",
           }}>
             <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a2e" }}>
-              🔔 Notifications
+               Notifications
             </h3>
             {unreadCount > 0 && (
               <span style={{

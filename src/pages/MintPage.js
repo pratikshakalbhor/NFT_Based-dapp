@@ -107,27 +107,27 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
 
       // Diagnostic: confirm what walletType and NETWORK look like at runtime
       console.log("---------------------------------------------------");
-      console.log("🚀 STARTING MINT");
-      console.log("📝 Contract:", CONTRACT_ID);
-      console.log("👤 Wallet:", walletAddress);
-      console.log("🔑 walletType:", walletType);
-      console.log("🌐 NETWORK constant:", NETWORK);        // should log "TESTNET"
-      console.log("🔐 NETWORK_PASSPHRASE:", NETWORK_PASSPHRASE);
+      console.log(" STARTING MINT");
+      console.log("Contract:", CONTRACT_ID);
+      console.log(" Wallet:", walletAddress);
+      console.log(" walletType:", walletType);
+      console.log(" NETWORK constant:", NETWORK);        // should log "TESTNET"
+      console.log(" NETWORK_PASSPHRASE:", NETWORK_PASSPHRASE);
       console.log("---------------------------------------------------");
 
       // Step 1: Upload to IPFS
       setStatus("Uploading image to IPFS...");
       const cid = await uploadToPinata(file);
       const tokenURI = `https://gateway.pinata.cloud/ipfs/${cid}`;
-      console.log("🖼️ URI:", tokenURI);
-      console.log("📛 Name:", name);
+      console.log(" URI:", tokenURI);
+      console.log(" Name:", name);
 
       // Step 2: Load account via Soroban RPC
       setStatus("Building transaction...");
       let sourceAccount;
       try {
         sourceAccount = await SOROBAN_SERVER.getAccount(walletAddress);
-        console.log("✅ Account loaded:", sourceAccount.accountId());
+        console.log(" Account loaded:", sourceAccount.accountId());
       } catch (e) {
         throw new Error(
           "Account not found on Stellar testnet. " +
@@ -156,16 +156,16 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       // Step 4: Simulate
       setStatus("Simulating transaction...");
       const simulation = await SOROBAN_SERVER.simulateTransaction(tx);
-      console.log("🔍 Simulation:", simulation);
+      console.log(" Simulation:", simulation);
 
       if (StellarSdk.rpc.Api.isSimulationError(simulation)) {
-        console.error("❌ Simulation Error:", simulation.error);
+        console.error(" Simulation Error:", simulation.error);
         throw new Error(`Simulation failed: ${simulation.error}`);
       }
 
       // Step 5: Assemble
       const assembledTx = StellarSdk.rpc.assembleTransaction(tx, simulation).build();
-      console.log("✅ Transaction assembled");
+      console.log(" Transaction assembled");
 
       // Step 6: Sign
       // NOTE: NETWORK = "TESTNET" (uppercase) is passed here.
@@ -190,7 +190,7 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       }
 
       if (!signedTxXdr) throw new Error("No signed XDR returned from wallet.");
-      console.log("✅ Transaction signed, XDR length:", signedTxXdr.length);
+      console.log(" Transaction signed, XDR length:", signedTxXdr.length);
 
       // Step 7: Reconstruct Transaction object from signed XDR
       const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
@@ -201,7 +201,7 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       console.log("📤 Submit response:", response);
 
       if (response.status === "ERROR") {
-        console.error("❌ ERROR response:", response);
+        console.error(" ERROR response:", response);
         throw new Error(
           `Transaction submission failed: ${response.errorResult?.toXDR
             ? response.errorResult.toXDR("base64")
@@ -221,7 +221,7 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
           await new Promise((r) => setTimeout(r, 1500));
           try {
             const poll = await SOROBAN_SERVER.getTransaction(response.hash);
-            console.log(`⏳ Poll ${i + 1}: ${poll.status}`);
+            console.log(` Poll ${i + 1}: ${poll.status}`);
             if (poll.status !== "NOT_FOUND") {
               finalStatus = poll.status;
               if (finalStatus === "SUCCESS") break;
@@ -253,7 +253,7 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
       await fetchBalance();
 
     } catch (e) {
-      console.error("❌ Mint Error:", e);
+      console.error(" Mint Error:", e);
       let msg = e.message || "Transaction failed";
       if (msg.includes("txBAD_AUTH") || msg.includes("Auth Error")) {
         msg = "Auth Error: Disconnect and reconnect your wallet, then try again.";

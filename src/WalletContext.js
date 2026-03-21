@@ -7,28 +7,26 @@ export const useWallet = () => useContext(WalletContext);
 
 export const WalletProvider = ({ children }) => {
   const [connectedWallets, setConnectedWallets] = useState([]);
-  const [walletAddress, setWalletAddress] = useState(''); // Active wallet address
-  const [walletType, setWalletType] = useState('');       // Active wallet type
+  const [walletAddress, setWalletAddress] = useState('');
+  const [walletType, setWalletType] = useState('');
   const [isModalOpen, setModalOpen] = useState(false);
 
-  // Restore session
+  // Restore session — sessionStorage only (clears on tab/browser close)
   useEffect(() => {
-    const savedWalletsStr = localStorage.getItem('connectedWallets');
-    const savedActiveAddress = localStorage.getItem('walletAddress');
-    
+    const savedWalletsStr = sessionStorage.getItem('connectedWallets');
+    const savedActiveAddress = sessionStorage.getItem('walletAddress');
+
     if (savedWalletsStr) {
       try {
         const wallets = JSON.parse(savedWalletsStr);
         setConnectedWallets(wallets);
-        
-        // Restore active wallet
+
         if (savedActiveAddress) {
           const active = wallets.find(w => w.address === savedActiveAddress);
           if (active) {
             setWalletAddress(active.address);
             setWalletType(active.type);
           } else if (wallets.length > 0) {
-            // Fallback to first if active not found
             setWalletAddress(wallets[0].address);
             setWalletType(wallets[0].type);
           }
@@ -36,28 +34,23 @@ export const WalletProvider = ({ children }) => {
       } catch (e) {
         console.error("Failed to parse wallet state", e);
       }
-    } else {
-      // Legacy support
-      const savedType = localStorage.getItem('walletType');
-      const savedAddress = localStorage.getItem('walletAddress');
-      if (savedType && savedAddress) {
-        const wallet = { address: savedAddress, type: savedType, name: savedType };
-        setConnectedWallets([wallet]);
-        setWalletType(savedType);
-        setWalletAddress(savedAddress);
-      }
     }
+
+    // Clear any old localStorage data (migration)
+    localStorage.removeItem('connectedWallets');
+    localStorage.removeItem('walletAddress');
+    localStorage.removeItem('walletType');
   }, []);
 
-  // Persist state
+  // Persist to sessionStorage only
   useEffect(() => {
-    localStorage.setItem('connectedWallets', JSON.stringify(connectedWallets));
+    sessionStorage.setItem('connectedWallets', JSON.stringify(connectedWallets));
     if (walletAddress) {
-      localStorage.setItem('walletAddress', walletAddress);
-      localStorage.setItem('walletType', walletType);
+      sessionStorage.setItem('walletAddress', walletAddress);
+      sessionStorage.setItem('walletType', walletType);
     } else {
-      localStorage.removeItem('walletAddress');
-      localStorage.removeItem('walletType');
+      sessionStorage.removeItem('walletAddress');
+      sessionStorage.removeItem('walletType');
     }
   }, [connectedWallets, walletAddress, walletType]);
 
@@ -77,7 +70,7 @@ export const WalletProvider = ({ children }) => {
         default:
           throw new Error('Invalid wallet type');
       }
-      
+
       if (result && result.address) {
         const newWallet = {
           address: result.address,
@@ -100,27 +93,27 @@ export const WalletProvider = ({ children }) => {
     }
   };
 
+  //  Full logout — clears everything
   const disconnectWallet = (addressToDisconnect) => {
-    // If no specific address is passed, we disconnect the active wallet.
-    const activeAddress = typeof walletAddress === 'string' ? walletAddress : walletAddress?.address;
+    const activeAddress = typeof walletAddress === 'string'
+      ? walletAddress
+      : walletAddress?.address;
     const targetAddress = addressToDisconnect || activeAddress;
 
     if (!targetAddress) return;
 
-    // Filter out the wallet to be disconnected.
     const newWallets = connectedWallets.filter(w => w.address !== targetAddress);
     setConnectedWallets(newWallets);
 
-    // If we just disconnected the active wallet, we need to select a new active wallet.
     if (targetAddress === activeAddress) {
       if (newWallets.length > 0) {
-        // Set the new active wallet to the first one in the remaining list.
         setWalletAddress(newWallets[0].address);
         setWalletType(newWallets[0].type);
       } else {
-        // If no wallets are left, clear the active wallet state.
+        //  Full clear
         setWalletAddress('');
         setWalletType('');
+        sessionStorage.clear();
       }
     }
   };

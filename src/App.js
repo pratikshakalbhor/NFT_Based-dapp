@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Menu } from "lucide-react";
 import "./App.css";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import Sidebar from "./components/Sidebar";
@@ -211,7 +211,7 @@ function App() {
                     cursor: "pointer",
                     fontSize: "20px",
                   }}>
-                  ☰
+                  <Menu size={24} color={isDark ? "#fff" : "#1a1a2e"} />
                 </div>
               </div>
             </div>
@@ -221,7 +221,7 @@ function App() {
             style={{ paddingTop: walletAddress ? "70px" : "0" }}
           >
             <Routes>
-              {/* ✅ Mobile Responsive Login Page */}
+              {/*  Mobile Responsive Login Page */}
               <Route path="/login" element={
                 !walletAddress ? (
                   <div style={{
@@ -253,7 +253,7 @@ function App() {
                         margin: "0 auto 20px",
                         fontSize: "28px",
                       }}>
-                        🌟
+                        💎
                       </div>
 
                       <h1 style={{
@@ -372,7 +372,7 @@ function App() {
                 element={
                   walletAddress ? (
                     <div className="pages-container">
-                      <GalleryPage nfts={nfts} />
+                      <GalleryPage nfts={nfts} walletAddress={walletAddress} />
                     </div>
                   ) : <Navigate to="/login" replace />
                 }

@@ -80,7 +80,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
       //  Step 4: Sign
       setStatus("Please sign in your wallet...");
       const xdr = transaction.toXDR();
-      console.log("📝 TX XDR built successfully");
+      console.log(" TX XDR built successfully");
 
       const signedXDR = await signTransaction(xdr, walletType, NETWORK, NETWORK_PASSPHRASE);
 
@@ -103,13 +103,13 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
 
       //  Step 6: Submit
       setStatus("Submitting transaction...");
-      console.log("📤 Submitting to Horizon...");
+      console.log("Submitting to Horizon...");
 
       const result = await server.submitTransaction(signedTx);
-      console.log("✅ Success:", result.hash);
+      console.log(" Success:", result.hash);
 
       setTxHash(result.hash);
-      setStatus(`✅ Payment Successful!`);
+      setStatus(`Payment Successful!`);
 
       //  Step 7: Refresh balance
       setTimeout(async () => {
@@ -126,7 +126,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
       setAmount("");
 
     } catch (e) {
-      console.error("❌ Payment Error:", e);
+      console.error(" Payment Error:", e);
 
       // Detailed error decode
       let errorMessage = "Transaction Failed. Please try again.";
@@ -141,7 +141,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
         const txCode = extras?.result_codes?.transaction;
         const opCode = extras?.result_codes?.operations?.[0];
 
-        console.error("🔴 Horizon error codes:", { txCode, opCode });
+        console.error(" Horizon error codes:", { txCode, opCode });
 
         if (txCode === "tx_insufficient_balance" || opCode === "op_underfunded") {
           errorMessage = "Error: Insufficient balance (including minimum reserve of 1 XLM).";

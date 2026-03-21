@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ref, push, onValue, serverTimestamp } from "firebase/database";
 import { db } from "../firebase";
 import { useWallet } from "../WalletContext";
@@ -9,6 +9,7 @@ import "./ChatPage.css";
 const ChatPage = () => {
   const { walletAddress } = useWallet();
   const location = useLocation();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [recipientAddress, setRecipientAddress] = useState(location.state?.recipientAddress || location.state?.senderAddress || "");
@@ -58,7 +59,7 @@ const ChatPage = () => {
         const messageList = Object.values(data);
         messageList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-        // ✅ Notification
+        // Notification
         const lastMsg = messageList[messageList.length - 1];
         if (
           lastMsg &&
@@ -109,7 +110,7 @@ const ChatPage = () => {
         timestamp: serverTimestamp(),
       });
 
-     
+
       if (recipientAddress) {
         await storeNotification(
           recipientAddress,
@@ -128,7 +129,30 @@ const ChatPage = () => {
 
   return (
     <div className="chat-container">
-      <h2>💬 FreelanceChain Chat</h2>
+      <h2>FreelanceChain Chat</h2>
+
+      {/*  Back button add kara */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          background: "transparent",
+          border: "1px solid rgba(255,255,255,0.15)",
+          borderRadius: "10px",
+          color: "rgba(255,255,255,0.6)",
+          padding: "8px 14px",
+          cursor: "pointer",
+          fontSize: "0.85rem",
+          marginBottom: "16px",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = "#6366f1"}
+        onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"}
+      >
+        ← Back
+      </button>
 
       {!chatStarted ? (
         <div className="chat-connect">
@@ -159,14 +183,14 @@ const ChatPage = () => {
             }}
           />
           <button onClick={handleStartChat}>
-            💬 Start Chat
+            Start Chat
           </button>
-          {error && <p className="chat-error">❌ {error}</p>}
+          {error && <p className="chat-error"> {error}</p>}
         </div>
       ) : (
         <div className="chat-window">
           <div className="chat-header">
-            <p>💬 {recipientAddress.slice(0, 8)}...{recipientAddress.slice(-4)}</p>
+            <p>{recipientAddress.slice(0, 8)}...{recipientAddress.slice(-4)}</p>
             <button
               onClick={() => { setChatStarted(false); setMessages([]); }}
               style={{
@@ -185,7 +209,7 @@ const ChatPage = () => {
 
           <div className="chat-messages">
             {messages.length === 0 ? (
-              <p className="no-messages">Pehla message pathava! 👋</p>
+              <p className="no-messages">No messages yet.</p>
             ) : (
               messages.map((msg, index) => (
                 <div
@@ -212,10 +236,10 @@ const ChatPage = () => {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSend()}
             />
-            <button onClick={handleSend}>Send 📤</button>
+            <button onClick={handleSend}>Send</button>
           </div>
 
-          {error && <p className="chat-error">❌ {error}</p>}
+          {error && <p className="chat-error"> {error}</p>}
         </div>
       )}
     </div>

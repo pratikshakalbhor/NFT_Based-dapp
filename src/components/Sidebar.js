@@ -281,7 +281,7 @@ const Sidebar = ({ walletAddress, onDisconnect, isOpen, setIsOpen }) => {
         </div>
 
         <div id="wallet-copy-hint" style={{ display: "none", textAlign: "center", fontSize: "0.75rem", color: "#10b981", fontWeight: 600 }}>
-          ✅ Copied!
+           Copied!
         </div>
 
         <button

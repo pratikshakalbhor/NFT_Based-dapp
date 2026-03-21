@@ -195,3 +195,59 @@ export const fetchNFTs = async (walletAddress) => {
     return []; // Return an empty array on failure.
   }
 };
+
+/**
+ * Fetch ALL NFTs from contract (for Marketplace — all owners)
+ * @param {string} walletAddress - Any valid address for simulation
+ * @returns {Promise<Array<{id, owner, name, image}>>}
+ */
+export const fetchAllNFTs = async (walletAddress) => {
+  if (!walletAddress) return [];
+
+  const contract = new Contract(CONTRACT_ID);
+  try {
+    const totalNum = await performReadOnlyCall(
+      walletAddress,
+      contract.call("get_total")
+    );
+
+    if (totalNum === null || totalNum === 0) return [];
+
+    // Fetch all NFTs in parallel (no owner filter)
+    const nftPromises = Array.from({ length: totalNum }, (_, i) => {
+      const id = i + 1;
+      return (async () => {
+        try {
+          const ownerResult = await performReadOnlyCall(
+            walletAddress,
+            contract.call("get_owner", nativeToScVal(id, { type: "u32" }))
+          );
+          const ownerAddress = ownerResult
+            ? new Address(ownerResult).toString()
+            : null;
+          if (!ownerAddress) return null;
+
+          const [name, image] = await Promise.all([
+            performReadOnlyCall(
+              walletAddress,
+              contract.call("get_name", nativeToScVal(id, { type: "u32" }))
+            ),
+            performReadOnlyCall(
+              walletAddress,
+              contract.call("get_image", nativeToScVal(id, { type: "u32" }))
+            ),
+          ]);
+          return { id, owner: ownerAddress, name, image };
+        } catch {
+          return null;
+        }
+      })();
+    });
+
+    const allNfts = await Promise.all(nftPromises);
+    return allNfts.filter(Boolean);
+  } catch (error) {
+    console.error("Error fetching all NFTs:", error);
+    return [];
+  }
+};
