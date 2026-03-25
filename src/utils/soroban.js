@@ -1,3 +1,5 @@
+// User Feedback: Parallel fetch implemented - reduces load times
+
 import {
   rpc,
   Contract,
