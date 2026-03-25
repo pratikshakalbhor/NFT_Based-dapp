@@ -1,3 +1,5 @@
+// User Feedback: Real-time chat feature implemented
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ref, push, onValue, serverTimestamp } from "firebase/database";
