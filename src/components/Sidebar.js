@@ -107,6 +107,7 @@ const Sidebar = ({ walletAddress, onDisconnect, isOpen, setIsOpen }) => {
     { to: "/gallery", icon: <Images size={18} />, label: "Gallery" },
     { to: "/marketplace", icon: <Store size={18} />, label: "Marketplace" },
     { to: "/activity", icon: <Activity size={18} />, label: "Activity" },
+    { to: "/monitoring", icon: <Activity size={20} />, label: "Monitoring" },
     { to: "/profile", icon: <User size={18} />, label: "Profile" },
   ];
 
@@ -133,7 +134,8 @@ const Sidebar = ({ walletAddress, onDisconnect, isOpen, setIsOpen }) => {
     margin: "4px 12px",
     borderRadius: "8px",
     textDecoration: "none",
-    fontWeight: 600,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
     fontSize: "0.95rem",
     transition: "all 0.2s ease",
     background: isActive ? themeStyles.activeLinkBg : "transparent",
@@ -174,6 +176,7 @@ const Sidebar = ({ walletAddress, onDisconnect, isOpen, setIsOpen }) => {
         <span style={{
           color: themeStyles.logoText,
           fontSize: "1rem",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontWeight: 800,
           letterSpacing: "-0.5px",
         }}>FreelanceChain</span>
@@ -273,7 +276,7 @@ const Sidebar = ({ walletAddress, onDisconnect, isOpen, setIsOpen }) => {
           onMouseLeave={e => e.currentTarget.style.borderColor = isDark ? "rgba(99,102,241,0.2)" : "rgba(99,102,241,0.3)"}
         >
           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
-          <span style={{ color: themeStyles.activeLinkColor, fontSize: "0.85rem", fontFamily: "monospace", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
+          <span style={{ color: themeStyles.activeLinkColor, fontSize: "0.85rem", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
             <Wallet size={14} />
             {shortenAddress(walletAddress)}
           </span>

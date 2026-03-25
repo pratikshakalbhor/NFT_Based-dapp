@@ -435,7 +435,7 @@ export default function EscrowPage({
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <h1 style={{
-          fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: 800,
+          fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800,
           background: isDark ? "linear-gradient(135deg, #a78bfa, #60a5fa)" : "linear-gradient(135deg, #4f46e5, #0ea5e9)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "8px",
         }}>Freelancer Escrow</h1>
@@ -463,6 +463,7 @@ export default function EscrowPage({
         {tabs.map((tab) => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
             flex: 1, padding: "10px", borderRadius: "12px", border: "none", cursor: "pointer",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontWeight: 600, fontSize: "0.85rem", transition: "all 0.2s",
             background: activeTab === tab.id ? "linear-gradient(135deg, #7c3aed, #4f46e5)" : "transparent",
             color: activeTab === tab.id ? "#fff" : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"),
@@ -585,12 +586,12 @@ export default function EscrowPage({
             <div key={job.id} style={cardStyle}>
               <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
                 <div>
-                  <h3 style={{ color: isDark ? "#fff" : "#1a1a2e", marginBottom: "6px" }}>{job.title}</h3>
+                  <h3 style={{ color: isDark ? "#fff" : "#1a1a2e", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, marginBottom: "6px" }}>{job.title}</h3>
                   <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem", marginBottom: "6px" }}>{job.description}</p>
-                  <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.75rem" }}>Client: {shortenAddr(String(job.client))}</p>
+                  <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontFamily: "'JetBrains Mono', monospace", fontSize: "0.75rem" }}>Client: {shortenAddr(String(job.client))}</p>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ color: "#34d399", fontWeight: 700, fontSize: "1.1rem", marginBottom: "8px" }}>
+                  <div style={{ color: "#34d399", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: "1.1rem", marginBottom: "8px" }}>
                     {(Number(job.amount) / 10_000_000).toFixed(2)} XLM
                   </div>
                   {String(job.client) !== walletAddress ? (
@@ -629,14 +630,14 @@ export default function EscrowPage({
               <div key={job.id} style={cardStyle}>
                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
                   <div>
-                    <h3 style={{ color: isDark ? "#fff" : "#1a1a2e", marginBottom: "4px" }}>{job.title}</h3>
+                    <h3 style={{ color: isDark ? "#fff" : "#1a1a2e", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, marginBottom: "4px" }}>{job.title}</h3>
                     <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem" }}>{job.description}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: "20px", background: statusInfo.bg, color: statusInfo.color, fontSize: "0.8rem", fontWeight: 600, marginBottom: "6px" }}>
                       {statusInfo.label}
                     </div>
-                    <div style={{ color: "#34d399", fontWeight: 700 }}>
+                    <div style={{ color: "#34d399", fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>
                       {(Number(job.amount) / 10_000_000).toFixed(2)} XLM
                     </div>
                   </div>

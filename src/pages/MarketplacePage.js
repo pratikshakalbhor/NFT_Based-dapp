@@ -308,7 +308,7 @@ export default function MarketplacePage({ walletAddress }) {
 
         {/* Header */}
         <motion.div variants={itemVariants} style={{ textAlign: "center", marginBottom: "40px" }}>
-          <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 700, color: isDark ? "#fff" : "#1a1a2e" }}>
+          <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, color: isDark ? "#fff" : "#1a1a2e" }}>
             Marketplace
           </h1>
           <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginTop: "4px" }}>Buy and sell NFTs on Stellar blockchain</p>
@@ -436,10 +436,10 @@ export default function MarketplacePage({ walletAddress }) {
 
                 {/* Info */}
                 <div style={{ padding: "16px" }}>
-                  <h3 style={{ color: isDark ? "white" : "#1a1a2e", fontWeight: 700, fontSize: "1rem", marginBottom: "8px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nft.name}</h3>
+                  <h3 style={{ color: isDark ? "white" : "#1a1a2e", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: "1rem", marginBottom: "8px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nft.name}</h3>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
                     {nft.listed && !nft.sold ? (
-                      <span style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", padding: "6px 12px", color: "#a78bfa", fontWeight:700 }}>{nft.price} XLM</span>
+                      <span style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "10px", padding: "6px 12px", color: "#a78bfa", fontFamily: "'JetBrains Mono', monospace", fontWeight:700 }}>{nft.price} XLM</span>
                     ) : (
                       <span style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)" }}>
                         {nft.sold
@@ -447,7 +447,7 @@ export default function MarketplacePage({ walletAddress }) {
                           : "Not listed"}
                       </span>
                     )}
-                    <span style={{ color: isDark ? "#64748b" : "#94a3b8", fontSize: "0.75rem" }}>{nft.owner}</span>
+                    <span style={{ color: isDark ? "#64748b" : "#94a3b8", fontFamily: "'JetBrains Mono', monospace", fontSize: "0.75rem" }}>{nft.owner}</span>
                   </div>
 
                   {/* Action buttons */}

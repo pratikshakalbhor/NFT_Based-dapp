@@ -124,8 +124,8 @@ export default function DashboardPage({ walletAddress, balance, nfts }) {
         {icon}
       </div>
       <div>
-        <div style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", marginBottom: "4px" }}>{label}</div>
-        <div style={{ color: isDark ? "#fff" : "#1a1a2e", fontSize: "1.5rem", fontWeight: 700 }}>{value}</div>
+        <div style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>{label}</div>
+        <div style={{ color: isDark ? "#fff" : "#1a1a2e", fontSize: "1.5rem", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}>{value}</div>
         {sub && <div style={{ color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", fontSize: "0.75rem", marginTop: "2px" }}>{sub}</div>}
       </div>
     </motion.div>
@@ -157,10 +157,10 @@ export default function DashboardPage({ walletAddress, balance, nfts }) {
 
       {/* Header */}
       <div style={{ marginBottom: "32px" }}>
-        <h1 style={{ color: isDark ? "#fff" : "#1a1a2e", fontSize: "2rem", fontWeight: 700, marginBottom: "8px" }}>Overview</h1>
-        <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.95rem" }}>
+        <h1 style={{ color: isDark ? "#fff" : "#1a1a2e", fontSize: "2rem", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, marginBottom: "8px" }}>Overview</h1>
+        <p style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontFamily: "'Inter', sans-serif", fontSize: "0.95rem" }}>
           Welcome back,{" "}
-          <span style={{ fontFamily: "monospace", color: isDark ? "#a78bfa" : "#7c3aed" }}>{shortenAddr(walletAddress)}</span>
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", color: isDark ? "#a78bfa" : "#7c3aed" }}>{shortenAddr(walletAddress)}</span>
         </p>
       </div>
 
@@ -222,7 +222,7 @@ export default function DashboardPage({ walletAddress, balance, nfts }) {
                           <div style={{ color: txType.text, fontSize: "0.9rem", fontWeight: 700, marginBottom: "2px" }}>
                             {txType.label}
                           </div>
-                          <div style={{ color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", fontSize: "0.75rem", fontFamily: "monospace" }}>
+                          <div style={{ color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", fontSize: "0.75rem", fontFamily: "'JetBrains Mono', monospace" }}>
                             {shortenAddr(tx.hash)}
                           </div>
                         </div>

@@ -14,9 +14,11 @@ import MarketplacePage from "./pages/MarketplacePage";
 import ActivityPage from "./pages/ActivityPage";
 import EscrowPage from "./pages/EscrowPage";
 import DashboardPage from "./pages/DashboardPage";
+import MonitoringPage from "./pages/MonitoringPage";
 import { useWallet } from "./WalletContext";
 import WalletModal from "./WalletModal";
 import ProfilePage from "./components/ProfilePage";
+import { runFullIndex, isIndexStale } from "./utils/dataIndexer";
 import { errorHandler } from "./utils/errorHandler";
 import ChatPage from "./pages/ChatPage";
 import NotificationPanel from "./components/NotificationPanel";
@@ -41,6 +43,15 @@ function App() {
   function showError(message, field) {
     alert(message);
   }
+
+  useEffect(() => {
+    if (walletAddress) {
+      // Auto-index if stale
+      isIndexStale().then(stale => {
+        if (stale) runFullIndex(walletAddress);
+      });
+    }
+  }, [walletAddress]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,7 +164,8 @@ function App() {
                 }}>💎</div>
                 <span style={{
                   color: isDark ? "#fff" : "#1a1a2e",
-                  fontWeight: 700,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 800,
                   fontSize: "0.9rem",
                 }}>FreelanceChain</span>
               </div>
@@ -190,7 +202,7 @@ function App() {
                   border: "1px solid rgba(99,102,241,0.3)",
                   borderRadius: "10px",
                   fontSize: "0.72rem",
-                  fontFamily: "monospace",
+                  fontFamily: "'JetBrains Mono', monospace",
                   color: isDark ? "#a78bfa" : "#6d28d9",
                   fontWeight: 600,
                   display: "flex",
@@ -258,7 +270,8 @@ function App() {
 
                       <h1 style={{
                         fontSize: "clamp(1.4rem, 5vw, 2rem)",
-                        fontWeight: 700,
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontWeight: 800,
                         color: isDark ? "#fff" : "#1a1a2e",
                         marginBottom: "10px",
                         lineHeight: 1.2,
@@ -266,6 +279,7 @@ function App() {
 
                       <p style={{
                         fontSize: "clamp(0.85rem, 3vw, 1rem)",
+                        fontFamily: "'Inter', sans-serif",
                         color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)",
                         marginBottom: "8px",
                       }}>Decentralized Freelancer Platform</p>
@@ -283,6 +297,7 @@ function App() {
                           width: "100%",
                           background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
                           color: "#fff",
+                          fontFamily: "'Inter', sans-serif",
                           fontWeight: 600,
                           padding: "clamp(12px, 3vw, 16px)",
                           borderRadius: "14px",
@@ -397,6 +412,13 @@ function App() {
                   ) : <Navigate to="/login" replace />
                 }
               />
+              <Route path="/monitoring" element={
+                walletAddress ? (
+                  <div className="pages-container">
+                    <MonitoringPage walletAddress={walletAddress} />
+                  </div>
+                ) : <Navigate to="/login" replace />
+              } />
               <Route
                 path="/chat"
                 element={

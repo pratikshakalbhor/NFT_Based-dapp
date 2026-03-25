@@ -81,7 +81,7 @@ export default function GalleryPage({ nfts, walletAddress }) {
         animate="visible"
       >
         <motion.div className="gallery-header" variants={itemVariants}>
-          <h1 className="heading-xl" style={{ color: isDark ? "#fff" : "#1a1a2e" }}>My NFT Collection</h1>
+          <h1 className="heading-xl" style={{ color: isDark ? "#fff" : "#1a1a2e", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>My NFT Collection</h1>
           <p className="subtext" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)" }}>
             Your minted digital assets on Stellar.
           </p>
@@ -204,7 +204,7 @@ export default function GalleryPage({ nfts, walletAddress }) {
                       background: isDark ? "rgba(15, 23, 42, 0.3)" : "rgba(255, 255, 255, 0.5)"
                     }}>
                       <h3 className="nft-name" title={nft.name || "Unnamed NFT"} style={{
-                        fontSize: "1.1rem", fontWeight: 700, margin: "0 0 6px 0",
+                        fontSize: "1.1rem", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, margin: "0 0 6px 0",
                         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                         color: isDark ? "#f8fafc" : "#1a1a2e"
                       }}>
