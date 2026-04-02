@@ -12,8 +12,10 @@ A full-stack decentralized application built on Stellar Testnet combining NFT mi
 | 🌐 **Live Demo** | https://freelancechain-dapp.vercel.app/login |
 | 📹 **Demo Video** | https://drive.google.com/file/d/1x3azpS7cS6JXB5bEXG07bxpUbHcTRg0u/view?usp=sharing |
 | 📂 **GitHub** | https://github.com/pratikshakalbhor/FreelanceChain |
-
 ---
+
+## 🐦 Community Contribution
+[Twitter Post](https://x.com/PratikshaK61510/status/2039695252710469654)
 
 ## 💡 What is this?
 
