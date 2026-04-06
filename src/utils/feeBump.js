@@ -25,7 +25,7 @@ export const submitWithFeeBump = async (
     // Build fee bump wrapper
     const feeBumpTx = StellarSdk.TransactionBuilder.buildFeeBumpTransaction(
       sponsorKeypair,     // fee source (sponsor pays)
-      "10000",            // base fee (stroops) — sponsor pays this
+      "100000",           // base fee (stroops) — sponsor pays this
       innerTx,
       NETWORK_PASSPHRASE
     );

@@ -75,7 +75,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
             amount: fixedAmount,
           })
         )
-        .setTimeout(60) //  60 seconds timeout
+        .setTimeout(300) //  300 seconds (5 minutes) timeout to prevent tx_too_late errors
         .build();
 
       //  Step 4: Sign
@@ -156,6 +156,8 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
           errorMessage = "Error: Sequence mismatch. Please try again.";
         } else if (txCode === "tx_bad_auth") {
           errorMessage = "Error: Auth failed. Reconnect your wallet and try again.";
+        } else if (txCode === "tx_too_late") {
+          errorMessage = "Error: Transaction expired. Please sign the transaction faster or try again.";
         } else {
           errorMessage = `Error: ${title || txCode || opCode || "Unknown network error"}`;
         }
