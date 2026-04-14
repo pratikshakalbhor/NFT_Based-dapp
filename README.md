@@ -281,6 +281,10 @@ npm test
 ### Profile Page
 <img width="1881" height="901" alt="image" src="https://github.com/user-attachments/assets/79559b09-d06a-4b0c-89f0-63479b8bc945" />
 
+### Monitoring page
+<img width="1896" height="902" alt="image" src="https://github.com/user-attachments/assets/7eeb3410-75bf-458b-9243-98b8e82c9e11" />
+
+
 ### Test Output (3+ Tests Passing)
 <img width="1506" height="914" alt="Screenshot 2026-03-16 130131" src="https://github.com/user-attachments/assets/895b84c9-bac0-4179-ad0b-4fbdfd364d28" />
 
