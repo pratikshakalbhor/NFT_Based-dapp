@@ -4,6 +4,7 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { useWallet } from "../WalletContext";
 import { signTransaction } from "../walletService";
 import { NETWORK, NETWORK_PASSPHRASE, CONTRACT_ID, SOROBAN_SERVER } from "../constants";
+import { recordActivity } from "../utils/activityService";
 import { useTheme } from "../context/ThemeContext";
 import { containerVariants, itemVariants, CheckIcon, CopyIcon } from "../components/ProfilePage";
 import "./MintPage.css";
@@ -247,6 +248,15 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
         ...prev,
         { name, imageId: tokenURI, assetCode: "NFT", issuer: CONTRACT_ID },
       ]);
+
+      // Log Activity
+      await recordActivity(walletAddress, {
+        type: "nft_minted",
+        title: "NFT Minted",
+        description: `Minted "${name}" on Stellar`,
+        color: "#8b5cf6"
+      });
+
       setName("");
       setDescription("");
       setFile(null);

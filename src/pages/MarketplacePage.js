@@ -9,6 +9,7 @@ import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
 import { useTheme } from "../context/ThemeContext";
 import { shortenAddress } from "../utils";
 import { fetchAllNFTs } from "../utils/soroban";
+import { recordActivity } from "../utils/activityService";
 import { containerVariants, itemVariants } from "../components/ProfilePage";
 import { RefreshCw, Tag, ShoppingCart, Trash2, Edit2 } from "lucide-react";
 
@@ -226,6 +227,23 @@ export default function MarketplacePage({ walletAddress }) {
         throw new Error("NFT was already purchased by someone else!");
       }
 
+      // Log Activities
+      // 1. For Buyer
+      await recordActivity(walletAddress, {
+        type: "nft_purchased",
+        title: "NFT Purchased",
+        description: `Purchased ${nft.name} for ${nft.price} XLM`,
+        color: "#60a5fa"
+      });
+
+      // 2. For Seller
+      await recordActivity(nft.ownerFull, {
+        type: "nft_sold",
+        title: "NFT Sold",
+        description: `Sold ${nft.name} for ${nft.price} XLM to ${shortenAddress(walletAddress)}`,
+        color: "#a78bfa"
+      });
+
       setSuccessTx({ hash: response.hash, nftName: nft.name, price: nft.price });
       setStatusMsg("");
 
@@ -260,6 +278,15 @@ export default function MarketplacePage({ walletAddress }) {
     }
     try {
       await saveToFirebase(selectedNft, listPrice);
+      
+      // Log Activity
+      await recordActivity(walletAddress, {
+        type: "nft_listed",
+        title: "NFT Listed",
+        description: `Listed ${selectedNft.name} for ${listPrice} XLM`,
+        color: "#fbbf24"
+      });
+
       setShowListModal(false);
       setListPrice("10");
       setSelectedNft(null);

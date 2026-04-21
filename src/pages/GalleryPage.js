@@ -7,6 +7,7 @@ import { getImageById } from "../utils/imageMap";
 import { containerVariants, itemVariants } from "../components/ProfilePage";
 import { useTheme } from "../context/ThemeContext";
 import { shortenAddress } from "../utils";
+import { recordActivity } from "../utils/activityService";
 import "./GalleryPage.css";
 
 export default function GalleryPage({ nfts, walletAddress }) {
@@ -56,8 +57,16 @@ export default function GalleryPage({ nfts, walletAddress }) {
         listed: true,
         sold: false,
         isCert: selectedNft.name?.toLowerCase().includes("certificate") ||
-                selectedNft.name?.toLowerCase().includes("job cert"),
+          selectedNft.name?.toLowerCase().includes("job cert"),
         listedAt: Date.now(),
+      });
+
+      // Log Activity
+      await recordActivity(walletAddress, {
+        type: "nft_listed",
+        title: "NFT Listed",
+        description: `Listed "${selectedNft.name}" for ${price} XLM`,
+        color: "#fbbf24"
       });
 
       setShowPriceModal(false);
@@ -161,7 +170,7 @@ export default function GalleryPage({ nfts, walletAddress }) {
                 imageId.startsWith("https://") || imageId.startsWith("ipfs://")
                   ? imageId
                   : getImageById(imageId.toUpperCase()) ||
-                    "https://via.placeholder.com/200?text=No+Image";
+                  "https://via.placeholder.com/200?text=No+Image";
 
               const imageKey = imageId.startsWith("https://")
                 ? "IPFS" : imageId.toUpperCase();

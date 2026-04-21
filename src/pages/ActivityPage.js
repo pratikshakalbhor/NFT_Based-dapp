@@ -1,31 +1,31 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useWallet } from "../WalletContext";
-import { ref, onValue } from "firebase/database";
-import { db } from "../firebase";
 import * as StellarSdk from "@stellar/stellar-sdk";
-import { HORIZON_URL } from "../constants";
-import { 
-  RefreshCw, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  ShoppingCart, 
-  Tag, 
-  Clock, 
-  Filter 
+import { HORIZON_URL, NETWORK_PASSPHRASE } from "../constants";
+import { listenToActivities } from "../utils/activityService";
+import {
+  RefreshCw,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ShoppingCart,
+  Tag,
+  Clock,
+  Filter
 } from "lucide-react";
 
 const ActivityPage = () => {
   const { isDark } = useTheme();
   const { walletAddress } = useWallet();
-  const [activities, setActivities] = useState([]);
+  const [blockchainActivities, setBlockchainActivities] = useState([]);
+  const [firebaseActivities, setFirebaseActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // ─── Helpers ──────────────────────────────────────────────────────────────────
-  
+
   const timeAgo = (dateStr) => {
     const date = new Date(dateStr);
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -39,9 +39,9 @@ const ActivityPage = () => {
   };
 
   const formatAmount = (amount) => {
-    return parseFloat(amount).toLocaleString(undefined, { 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 7 
+    return parseFloat(amount).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 7
     });
   };
 
@@ -50,99 +50,65 @@ const ActivityPage = () => {
   const fetchActivity = useCallback(async () => {
     if (!walletAddress) return;
     setIsRefreshing(true);
-    
+
     try {
       const allActivities = [];
 
-      // 1. Fetch Stellar Payments (Blockchain)
+      // 1. Fetch Stellar Transactions (Blockchain) - captures all account activity
       try {
         const server = new StellarSdk.Horizon.Server(HORIZON_URL);
-        const payments = await server.payments()
+        const txs = await server.transactions()
           .forAccount(walletAddress)
           .order("desc")
           .limit(20)
           .call();
 
-        payments.records.forEach(p => {
-          if (p.type === "payment" && p.asset_type === "native") {
-            const isSent = p.from === walletAddress;
+        txs.records.forEach(tx => {
+          try {
+            const envelope = StellarSdk.TransactionBuilder.fromXDR(tx.envelope_xdr, NETWORK_PASSPHRASE);
+            const op = envelope.operations[0];
+
+            let title = "Account Activity";
+            let type = "transaction";
+            let color = "#94a3b8";
+            let icon = <RefreshCw size={18} />;
+            let description = `Transaction ${tx.hash.slice(0, 6)}...`;
+
+            // Recognize payment operations
+            if (op.type === "payment" && op.asset.isNative()) {
+              const isSent = tx.source_account === walletAddress;
+              type = isSent ? "payment_sent" : "payment_received";
+              title = isSent ? "Sent XLM" : "Received XLM";
+              description = isSent
+                ? `Sent ${formatAmount(op.amount)} XLM to ${op.destination.slice(0, 4)}...${op.destination.slice(-4)}`
+                : `Received ${formatAmount(op.amount)} XLM from ${tx.source_account.slice(0, 4)}...${tx.source_account.slice(-4)}`;
+              color = isSent ? "#f87171" : "#34d399";
+              icon = isSent ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />;
+            }
+            // Recognize contract calls (Soroban)
+            else if (op.type === "invokeHostFunction") {
+              title = "Contract Action";
+              color = "#6366f1";
+              if (tx.envelope_xdr.includes("mint")) {
+                title = "NFT Minted";
+                description = "Created a new digital asset on Soroban";
+              } else if (tx.envelope_xdr.includes("approve")) {
+                title = "Contract Approved";
+                description = "Authorized XLM for escrow/contract";
+              }
+            }
+
             allActivities.push({
-              id: p.id,
-              type: isSent ? "payment_sent" : "payment_received",
-              title: isSent ? "Sent XLM" : "Received XLM",
-              description: isSent 
-                ? `Sent ${formatAmount(p.amount)} XLM to ${p.to.slice(0, 4)}...${p.to.slice(-4)}`
-                : `Received ${formatAmount(p.amount)} XLM from ${p.from.slice(0, 4)}...${p.from.slice(-4)}`,
-              time: new Date(p.created_at),
-              amount: p.amount,
-              color: isSent ? "#f87171" : "#34d399",
-              icon: isSent ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />
+              id: tx.id,
+              type, title, description, time: new Date(tx.created_at), color, icon
             });
-          }
+          } catch (e) { /* skip unparseable */ }
         });
       } catch (e) {
-        console.warn("Error fetching payments:", e);
+        console.warn("Error fetching Stellar activity:", e);
       }
 
-      // 2. Fetch Firebase Marketplace Activity
-      // Note: We use a promise wrapper here to get the value once for the combined list
-      const marketPromise = new Promise((resolve) => {
-        const marketRef = ref(db, "marketplace");
-        onValue(marketRef, (snap) => {
-          const data = snap.val() || {};
-          const marketEvents = [];
-          
-          Object.values(data).forEach(nft => {
-            // NFT Purchased (Current user is owner and it is sold)
-            if (nft.sold && nft.ownerFull === walletAddress && nft.soldAt) {
-              marketEvents.push({
-                id: `buy_${nft.nftKey}`,
-                type: "nft_purchased",
-                title: "NFT Purchased",
-                description: `Purchased ${nft.name} for ${nft.price} XLM`,
-                time: new Date(nft.soldAt),
-                color: "#60a5fa",
-                icon: <ShoppingCart size={18} />
-              });
-            }
-
-            // NFT Sold (Current user was previous owner - assumes previousOwner field exists)
-            if (nft.sold && nft.previousOwner === walletAddress && nft.soldAt) {
-              marketEvents.push({
-                id: `sold_${nft.nftKey}`,
-                type: "nft_sold",
-                title: "NFT Sold",
-                description: `Sold ${nft.name} for ${nft.price} XLM`,
-                time: new Date(nft.soldAt),
-                color: "#a78bfa",
-                icon: <Tag size={18} />
-              });
-            }
-
-            // NFT Listed (Current user listed it)
-            if (nft.listed && nft.ownerFull === walletAddress && nft.listedAt) {
-              marketEvents.push({
-                id: `list_${nft.nftKey}`,
-                type: "nft_listed",
-                title: "NFT Listed",
-                description: `Listed ${nft.name} for ${nft.price} XLM`,
-                time: new Date(nft.listedAt),
-                color: "#fbbf24",
-                icon: <Tag size={18} />
-              });
-            }
-          });
-          resolve(marketEvents);
-        }, { onlyOnce: true });
-      });
-
-      const marketActivities = await marketPromise;
-      allActivities.push(...marketActivities);
-
-      // Sort by time descending
-      allActivities.sort((a, b) => b.time - a.time);
-      
-      setActivities(allActivities);
+      setBlockchainActivities(allActivities);
       setLastUpdated(new Date());
     } catch (error) {
       console.error("Activity fetch error:", error);
@@ -157,11 +123,50 @@ const ActivityPage = () => {
     fetchActivity();
   }, [fetchActivity]);
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh blockchain every 60 seconds
   useEffect(() => {
-    const interval = setInterval(fetchActivity, 30000);
+    const interval = setInterval(fetchActivity, 60000);
     return () => clearInterval(interval);
   }, [fetchActivity]);
+
+  // Real-time Firebase listener
+  useEffect(() => {
+    if (!walletAddress) return;
+    
+    const unsubscribe = listenToActivities(walletAddress, (newActivities) => {
+      // Map Firebase activities to UI format
+      const mapped = newActivities.map(act => ({
+        id: act.id,
+        type: act.type,
+        title: act.title,
+        description: act.description,
+        time: new Date(act.timestamp),
+        color: act.color || "#94a3b8",
+        icon: getIconForType(act.type, act.color)
+      }));
+      setFirebaseActivities(mapped);
+    });
+
+    return () => unsubscribe();
+  }, [walletAddress]);
+
+  // Combined and sorted activities
+  const activities = useMemo(() => {
+    const combined = [...firebaseActivities, ...blockchainActivities];
+    // Sort by time descending
+    return combined.sort((a, b) => b.time - a.time);
+  }, [firebaseActivities, blockchainActivities]);
+
+  // Icon Helper
+  function getIconForType(type, color) {
+    if (type.includes("nft_minted")) return <RefreshCw size={18} />;
+    if (type.includes("nft_listed")) return <Tag size={18} />;
+    if (type.includes("nft_purchased")) return <ShoppingCart size={18} />;
+    if (type.includes("nft_sold")) return <Tag size={18} />;
+    if (type.includes("job_")) return <RefreshCw size={18} />;
+    if (type.includes("payment_")) return <ArrowDownLeft size={18} />;
+    return <RefreshCw size={18} />;
+  }
 
   // ─── Filter Logic ─────────────────────────────────────────────────────────────
 
@@ -207,11 +212,11 @@ const ActivityPage = () => {
     padding: "8px 16px",
     borderRadius: "20px",
     border: "none",
-    background: filter === key 
-      ? (isDark ? "rgba(99, 102, 241, 0.2)" : "rgba(99, 102, 241, 0.1)") 
+    background: filter === key
+      ? (isDark ? "rgba(99, 102, 241, 0.2)" : "rgba(99, 102, 241, 0.1)")
       : "transparent",
-    color: filter === key 
-      ? (isDark ? "#a78bfa" : "#6366f1") 
+    color: filter === key
+      ? (isDark ? "#a78bfa" : "#6366f1")
       : (isDark ? "#94a3b8" : "#64748b"),
     fontWeight: 600,
     fontSize: "0.9rem",
@@ -231,8 +236,8 @@ const ActivityPage = () => {
             Real-time updates from blockchain & marketplace
           </p>
         </div>
-        <button 
-          onClick={fetchActivity} 
+        <button
+          onClick={fetchActivity}
           disabled={isRefreshing}
           style={{
             background: isDark ? "rgba(255,255,255,0.05)" : "white",
@@ -305,13 +310,13 @@ const ActivityPage = () => {
                     <Clock size={12} /> {timeAgo(act.time)}
                   </span>
                 </div>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: "0.85rem", 
-                  color: isDark ? "#94a3b8" : "#475569", 
-                  whiteSpace: "nowrap", 
-                  overflow: "hidden", 
-                  textOverflow: "ellipsis" 
+                <p style={{
+                  margin: 0,
+                  fontSize: "0.85rem",
+                  color: isDark ? "#94a3b8" : "#475569",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
                 }}>
                   {act.description}
                 </p>
@@ -320,9 +325,9 @@ const ActivityPage = () => {
           ))
         ) : (
           // Empty State
-          <div style={{ 
-            textAlign: "center", 
-            padding: "60px 20px", 
+          <div style={{
+            textAlign: "center",
+            padding: "60px 20px",
             background: isDark ? "rgba(30, 41, 59, 0.2)" : "rgba(241, 245, 249, 0.5)",
             borderRadius: "16px",
             border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #e2e8f0"
@@ -335,7 +340,7 @@ const ActivityPage = () => {
           </div>
         )}
       </div>
-      
+
       <div style={{ textAlign: "center", marginTop: "24px", fontSize: "0.75rem", color: isDark ? "#475569" : "#94a3b8" }}>
         Auto-refreshing every 30s • Last updated: {lastUpdated.toLocaleTimeString()}
       </div>

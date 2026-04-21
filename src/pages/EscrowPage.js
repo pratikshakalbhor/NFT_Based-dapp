@@ -16,6 +16,7 @@ import {
 } from "../constants";
 import { useTheme } from "../context/ThemeContext";
 import { storeNotification } from "../utils/notificationService";
+import { recordActivity } from "../utils/activityService";
 
 const STATUS_COLORS = {
   0: { bg: "rgba(59,130,246,0.15)", color: "#60a5fa", label: "Open" },
@@ -216,6 +217,15 @@ export default function EscrowPage({
         .setTimeout(300).build();
       await buildSignSubmit(postTx, walletType, "post_job", showStatus);
       showStatus(" Job posted! XLM locked in escrow.", "success");
+      
+      // Log Activity
+      await recordActivity(walletAddress, {
+        type: "job_posted",
+        title: "Job Posted",
+        description: `Posted "${title.trim()}" for ${xlm} XLM`,
+        color: "#6366f1"
+      });
+
       setTitle(""); setDescription(""); setAmount("");
       await loadJobs();
       setActiveTab("find");
@@ -243,6 +253,16 @@ export default function EscrowPage({
         .setTimeout(300).build();
       await buildSignSubmit(tx, walletType, "accept_job", showStatus);
       showStatus(" Job accepted! You are now the assigned freelancer.", "success");
+      
+      // Log Activity
+      const acceptedJob = jobs.find(j => j.id === jobId);
+      await recordActivity(walletAddress, {
+        type: "job_accepted",
+        title: "Job Accepted",
+        description: `Accepted job: "${acceptedJob?.title || jobId}"`,
+        color: "#facc15"
+      });
+
       await loadJobs();
       onJobAccepted?.(jobId);
     } catch (e) {
@@ -269,6 +289,16 @@ export default function EscrowPage({
         .setTimeout(300).build();
       await buildSignSubmit(tx, walletType, "submit_work", showStatus);
       showStatus(" Work submitted! Waiting for client approval.", "success");
+      
+      // Log Activity
+      const submittedJob = jobs.find(j => j.id === jobId);
+      await recordActivity(walletAddress, {
+        type: "job_submitted",
+        title: "Work Submitted",
+        description: `Submitted work for: "${submittedJob?.title || jobId}"`,
+        color: "#fb923c"
+      });
+
       setWorkUrl(""); setSubmitJobId(null);
       await loadJobs();
       onWorkSubmitted?.(jobId);
@@ -326,6 +356,23 @@ export default function EscrowPage({
         ` Payment of ${amountXLM} XLM sent to ${freelancer.slice(0, 6)}...${freelancer.slice(-4)}! Minting NFT certificate...`,
         "success"
       );
+
+      // Log Activities
+      // 1. For Client
+      await recordActivity(walletAddress, {
+        type: "payment_released",
+        title: "Payment Released",
+        description: `Released ${amountXLM} XLM for "${job.title}"`,
+        color: "#34d399"
+      });
+
+      // 2. For Freelancer
+      await recordActivity(freelancer, {
+        type: "payment_received",
+        title: "Payment Received",
+        description: `Received ${amountXLM} XLM for "${job.title}"`,
+        color: "#34d399"
+      });
 
       // Step 4: Mint NFT certificate
       try {
