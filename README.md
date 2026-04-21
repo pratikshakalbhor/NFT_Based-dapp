@@ -12,10 +12,8 @@ A full-stack decentralized application built on Stellar Testnet combining NFT mi
 | 🌐 **Live Demo** | https://freelancechain-dapp.vercel.app/login |
 | 📹 **Demo Video** | https://drive.google.com/file/d/1x3azpS7cS6JXB5bEXG07bxpUbHcTRg0u/view?usp=sharing |
 | 📂 **GitHub** | https://github.com/pratikshakalbhor/FreelanceChain |
+| 🐦 **Community Contribution** [Twitter Post] | https://x.com/PratikshaK61510/status/2039695252710469654 |
 ---
-
-## 🐦 Community Contribution
-[Twitter Post](https://x.com/PratikshaK61510/status/2039695252710469654)
 
 ## 💡 What is this?
 
@@ -71,7 +69,7 @@ This table documents user feedback received for FreelancerShield and the corresp
 | 10 | Arya Kale | aryakale1052@gmail.com | GDP3LC2RSGXIFCRMO33HGRT4ACU4Y2DL73BJQQ74KJKVK7I7ICP6Y5KL | The UI and working of the model |
 | 11 | Ankita Khopade | ankitakhopade.811@gmail.com | GDP3LC2RSGXIFCRMO33HGRT4ACU4Y2DL73BJQQ74KJKVK7I7ICP6Y5KL | UI | 
 | 12 | Janhavi Lipare | janhavilipare9948@gmail.com | GBLUMAX4IIPS54AIGD5WXRRAXISG4HLV3BE3YR3SQAD3GZSXRTVJY5GI | Working is soo goood | 
-| 13 |  Nirupam Karankale | ndkindia09@gmail.com | GCI3R7F3UZ3V6HY7L35ISGQE7GMW55U3LPG4YNPSLHSXCXBGNJERXSVH | Its easy — need more wallet connection buttons | 
+| 13 |  Nirupam Karankale | ndkindia09@gmail.com | GCI3R7F3UZ3V6HY7L35ISGQE7GMW55U3LPG4YNPSLHSXCXBGNJERXSVH | Its easy — Add wallet install links | 
 | 14 | Babar Payal | babarpayal953@gmail.com | 0xa930f229FDbA3d7F7c772900CACF41A7967A8533 | User-friendly interface and smooth navigation — need clearer instructions for beginners |
 | 15 | Pooja Kohinkar | poojakohinkar06@gmail.com | GA56O2VQSLKWPSCB57HC6UHASQ5O7P2WIVXYIJIUL3ZT6JZAFVVLB2DK | NFT Marketplace |
 | 16 | Sankruti Chavan | csankruti@gmail.com | GBROW5BI5VDRZ4ZKO432LAPTTDODYQCJQXTCUXAEBWGTPG7JIGLVB5M3 | Fast and smooth transactions with very low fees — improve UI design slightly | 
@@ -84,10 +82,10 @@ This table documents user feedback received for FreelancerShield and the corresp
 | 23 | Durga Ingale| durgaingale5@gmail.com | GCEUW6ZI7HNCQWAN6VV4O66RPDKISAXS4MA3AKZXXFHWTIFFJEIX6NPJ | I like UI and job Features  |
  | 24 | Shubhankaroti Jagadale  | shubhankarotijagadale@gmail.com | GCKUPQGTTY6SRTJR5LX6VZUVBK6ORGGBTGKG7HOCLTSWLO43GPIG4REG | Easy payment   |
  | 25 | Pranita Sakat| sakatpranita@gmail.com  | GBEV3VKOVK5RX7EBWTTRF74USKLFQZ2F2COMGYCRTCFM5356EIL2CEWH | Devloped AI assistant    |
-  | 26 | |   |  |    |
-  | 27 | |   |  |    |
+  | 26 | Anjali Prasad | anjaliprasad9581@gmail.com  | GCE2MJUAI4CVRA52XGDN3ZZWWFI66LJAPEQ3GZ6U664J2FEKDOBGILCR |  No any improvement need  |
+  | 27 | Snehal balghare | balgharesnehal27@gmail.com  |  GDYK646NA4EYYXYVTKJH3C5EYJIRHN24X3TI6NLPDSF6353INWOH7LV3 | -   |
   | 28 | |   |  |    |
-  | 29 | |   |  |    |
+  | 29 | Swati chavan  |  chavansomnath0960@gmail.com | GCDDHHSB2MFLM2KPJQ6DQ5EQJBTQE7C7KC6J3C3UOV2YJICNFYP4SGC5 | Add wallet install links   |
   | 30 | |   |  |    |
 
 ---
@@ -142,6 +140,10 @@ This table documents user feedback received for FreelancerShield and the corresp
 - Implemented parallel fetch using `Promise.all()` in `src/utils/soroban.js`
 - NFTs and Jobs load simultaneously instead of sequentially
 - **Commit:** `a65f2db` — User Feedback: Reducing load times would improve experience: Fixed ✅
+
+**3. "Add wallet install links"**
+- **Commit:** 4fee409 fix: update wallet install links - Freighter and xBull correct URLs
+  
 
 
 ## 🏗️ How the Escrow Works
