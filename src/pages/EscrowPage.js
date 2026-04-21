@@ -1,3 +1,8 @@
+/**
+ * User Feedback: Add Search box in job page
+ * Instant keyword search by job title and description
+ * implemented in Find Jobs tab using searchQuery state
+ */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -528,12 +533,12 @@ export default function EscrowPage({
           <div style={{ position: "relative", marginBottom: "16px" }}>
             <input
               type="text"
-              placeholder="Search jobs by title or description..."
+              placeholder="🔍 Search jobs by title or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: "100%",
-                padding: "12px 40px 12px 16px",
+                padding: "12px 40px 12px 44px",
                 borderRadius: "12px",
                 border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
                 background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
@@ -546,6 +551,15 @@ export default function EscrowPage({
               onFocus={e => e.target.style.borderColor = "#6366f1"}
               onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}
             />
+            <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", opacity: 0.7 }}>🔍</div>
+            {searchQuery && (
+              <div style={{
+                position: "absolute", right: "44px", top: "50%", transform: "translateY(-50%)",
+                background: "#7c3aed", color: "white", padding: "2px 8px", borderRadius: "8px", fontSize: "0.7rem", fontWeight: 700
+              }}>
+                {openJobs.length} results
+              </div>
+            )}
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
