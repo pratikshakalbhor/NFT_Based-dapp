@@ -1,3 +1,10 @@
+/**
+ * User Feedback: Improve UI design slightly
+ * - Added mobile device detection
+ * - Show "Detected" badge for installed wallets
+ * - Show "Install" button with store links for missing wallets
+ * - Better visual hierarchy with gradient wallet icons
+ */
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -268,6 +275,7 @@ const WalletModal = () => {
                 isAvailable={available.freighter}
                 installKey="freighter"
               />
+              <div className="wallet-modal-divider" style={{ margin: "8px 0" }} />
 
               <WalletButton
                 type={WALLET_TYPES.ALBEDO}
@@ -277,6 +285,7 @@ const WalletModal = () => {
                 isAvailable={true}
                 installKey="freighter"
               />
+              <div className="wallet-modal-divider" style={{ margin: "8px 0" }} />
 
               <WalletButton
                 type={WALLET_TYPES.XBULL}
