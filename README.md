@@ -99,6 +99,11 @@ This table documents user feedback received for FreelancerShield and the corresp
 |Dnyaneshwari Badhe |dnyaneshwaribadhe2323@gmail.com | Add more advanced features | Implemented fee sponsorship (gasless transactions) utility in feeBump.js | `ff5ef67` |
 |Diksha Sawant  |sawantdiksha83@gmail.com | Activity page very slow | Fixed ActivityPage.js performance, restored missing files, implemented real-time tracking with activityService.js (260+ lines changed across 6 files) | `7470cb1` |
 
+### 📸 Commit Proof (git show --stat)
+<img width="1737" height="801" alt="image" src="https://github.com/user-attachments/assets/1a6146e7-48f0-405d-8f86-2a060677f452" />
+<img width="1248" height="507" alt="image" src="https://github.com/user-attachments/assets/cf0780cb-4482-4987-bf9f-1080d90ad83f" />
+
+
 ## Feedback Summary
  
 | Feature | Feedback | Status |
