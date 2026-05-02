@@ -147,7 +147,7 @@ const MintPage = ({ walletAddress, server, setBalance, setNfts, nfts }) => {
             "mint_nft",
             new StellarSdk.Address(walletAddress).toScVal(),
             new StellarSdk.Address(walletAddress).toScVal(),
-            StellarSdk.nativeToScVal(name, { type: "string" }),
+            StellarSdk.nativeToScVal(name.trim(), { type: "string" }),
             StellarSdk.nativeToScVal(tokenURI, { type: "string" })
           )
         )

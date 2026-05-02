@@ -57,28 +57,48 @@ const buildSignSubmit = async (txUnsigned, walletType, label, onStatus) => {
     throw new Error("No wallet connected. Please connect Freighter, Albedo, or xBull first.");
   }
 
-  onStatus(` ${label}: preparing transaction (10-15 sec)...`, "info");
-  let prepared;
-  try {
-    prepared = await SOROBAN_SERVER.prepareTransaction(txUnsigned);
-  } catch (e) {
-    throw new Error(`${label} prepare failed: ${e.message}`);
-  }
-  onStatus(` ${label}: please sign in your wallet...`, "info");
+  onStatus(`⏳ ${label}: simulating transaction...`, "info");
 
-  // Pass as object so walletService.js handles both positional & object forms
-  const signedXdr = await signTransaction(prepared.toXDR(), {
+  // Step 1: Simulate
+  let simulation;
+  try {
+    simulation = await SOROBAN_SERVER.simulateTransaction(txUnsigned);
+  } catch (e) {
+    throw new Error(`${label} simulation failed: ${e.message}`);
+  }
+
+  if (StellarSdk.rpc.Api.isSimulationError(simulation)) {
+    throw new Error(`${label} simulation error: ${simulation.error}`);
+  }
+
+  // Step 2: Assemble (injects Soroban auth + footprint)
+  let assembled;
+  try {
+    assembled = StellarSdk.rpc.assembleTransaction(txUnsigned, simulation).build();
+  } catch (e) {
+    throw new Error(`${label} assembly failed: ${e.message}`);
+  }
+
+  onStatus(`✍️ ${label}: please sign in your wallet...`, "info");
+
+  // Step 3: Sign — always pass networkPassphrase (not "TESTNET")
+  const signedXdr = await signTransaction(assembled.toXDR(), {
     walletType,
     network: NETWORK,
     networkPassphrase: NETWORK_PASSPHRASE,
   });
 
   if (!signedXdr) throw new Error(`${label}: signing cancelled.`);
+
+  // Step 4: Submit via Soroban RPC
   const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
   const response = await SOROBAN_SERVER.sendTransaction(signedTx);
+
   if (response.status === "ERROR") {
     throw new Error(`${label} error: ${JSON.stringify(response.errorResult ?? response)}`);
   }
+
+  // Step 5: Poll for confirmation
   for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 1500));
     const poll = await SOROBAN_SERVER.getTransaction(response.hash);
@@ -199,7 +219,9 @@ export default function EscrowPage({
     const ledgerInfo = await SOROBAN_SERVER.getLatestLedger();
     const EXPIRY_LEDGER = ledgerInfo.sequence + 500;
     setLoading(true);
+    
     try {
+      // Step 1: Approve
       showStatus("Step 1 of 2: Approving XLM transfer — please sign...", "info");
       const approveAccount = await SOROBAN_SERVER.getAccount(walletAddress);
       const approveTx = new StellarSdk.TransactionBuilder(approveAccount, {
@@ -213,7 +235,10 @@ export default function EscrowPage({
           StellarSdk.nativeToScVal(EXPIRY_LEDGER, { type: "u32" })
         ))
         .setTimeout(300).build();
+      
       await buildSignSubmit(approveTx, walletType, "approve", showStatus);
+
+      // Step 2: Post Job
       showStatus("Step 2 of 2: Posting job — please sign...", "info");
       const postAccount = await SOROBAN_SERVER.getAccount(walletAddress);
       const postTx = new StellarSdk.TransactionBuilder(postAccount, {
@@ -227,8 +252,10 @@ export default function EscrowPage({
           StellarSdk.nativeToScVal(amountStroops, { type: "i128" })
         ))
         .setTimeout(300).build();
+      
       await buildSignSubmit(postTx, walletType, "post_job", showStatus);
-      showStatus(" Job posted! XLM locked in escrow.", "success");
+
+      showStatus("✅ Job posted successfully! XLM locked in escrow.", "success");
       
       // Log Activity
       await recordActivity(walletAddress, {
@@ -360,13 +387,15 @@ export default function EscrowPage({
       // Step 4: Mint NFT certificate
       try {
         const nftAccount = await SOROBAN_SERVER.getAccount(walletAddress);
+        const sanitizeSymbol = (s) =>
+          String(s).trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_").slice(0, 32);
         const nftTx = new StellarSdk.TransactionBuilder(nftAccount, { fee: "1000000", networkPassphrase: NETWORK_PASSPHRASE })
           .addOperation(new StellarSdk.Contract(CONTRACT_ID).call(
             "mint_nft",
             new StellarSdk.Address(walletAddress).toScVal(),
             new StellarSdk.Address(freelancer).toScVal(),
-            StellarSdk.nativeToScVal(`Job Certificate: ${job.title}`, { type: "string" }),
-            StellarSdk.nativeToScVal(job.work_url && String(job.work_url) !== "" ? String(job.work_url) : "https://gateway.pinata.cloud/ipfs/Qmcertificate", { type: "string" })
+            StellarSdk.nativeToScVal(sanitizeSymbol(`JOB_CERT_${job.title}`), { type: "symbol" }),
+            StellarSdk.nativeToScVal(sanitizeSymbol(job.work_url && String(job.work_url) !== "" ? String(job.work_url) : "IPFS_CERTIFICATE"), { type: "symbol" })
           ))
           .setTimeout(300).build();
 

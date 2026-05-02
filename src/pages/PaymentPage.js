@@ -6,10 +6,8 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { containerVariants, itemVariants, XLMIcon } from "../components/ProfilePage";
 import "../App.css";
 import "./PaymentPage.css";
-import "./PaymentPage.css";
 import { NETWORK, NETWORK_PASSPHRASE } from "../constants";
 import { useTheme } from "../context/ThemeContext";
-import { submitWithFeeBump, isSponsorAvailable } from "../utils/feeBump";
 
 export default function PaymentPage({ walletAddress, balance, setBalance, server }) {
   const { walletType } = useWallet();
@@ -101,20 +99,11 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
           ? signedXDR.signedTxXdr
           : signedXDR;
 
-      let result;
-      if (isSponsorAvailable()) {
-        // ✅ Gasless — Sponsor pays fee
-        setStatus("Sponsor paying fee (gasless transaction)...");
-        const bumpResult = await submitWithFeeBump(signedXDRString, process.env.REACT_APP_SPONSOR_SECRET);
-        if (!bumpResult.success) throw new Error(bumpResult.error);
-        result = { hash: bumpResult.hash };
-      } else {
-        // Normal — User pays fee
-        const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXDRString, NETWORK_PASSPHRASE);
-        setStatus("Submitting transaction...");
-        console.log("Submitting to Horizon...");
-        result = await server.submitTransaction(signedTx);
-      }
+      // Step 5: Submit directly to Horizon (fee bump causes 400 — user already signed)
+      const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXDRString, NETWORK_PASSPHRASE);
+      setStatus("Submitting transaction...");
+      console.log("Submitting to Horizon...");
+      const result = await server.submitTransaction(signedTx);
       console.log(" Success:", result.hash);
 
       setTxHash(result.hash);
@@ -214,19 +203,7 @@ export default function PaymentPage({ walletAddress, balance, setBalance, server
             boxShadow: isDark ? "0 25px 50px rgba(88,28,135,0.4)" : "0 4px 24px rgba(0,0,0,0.08)"
           }}
         >
-          {isSponsorAvailable() && (
-            <div style={{
-              padding: "10px 16px",
-              background: "rgba(16,185,129,0.1)",
-              border: "1px solid rgba(16,185,129,0.2)",
-              borderRadius: "10px",
-              fontSize: "0.8rem",
-              color: "#10b981",
-              marginBottom: "16px",
-            }}>
-              Gasless Transaction Enabled — Network fee sponsored
-            </div>
-          )}
+
           {/* Balance Display */}
           <div
             className="balance-card"
